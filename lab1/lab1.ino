@@ -33,12 +33,12 @@ void loop(){
     moveForwardTurningRight(.5, .2);
     delay(3000);
 
-    //move backward while turning right
-    moveBackwardTurningRight(.5, .2);
-    delay(3000);
-
     //move forward while turning left
     moveForwardTurningLeft(.5, .2);
+    delay(3000);
+
+    //move backward while turning right
+    moveBackwardTurningRight(.5, .2);
     delay(3000);
 
     //move backward while turning left
@@ -81,14 +81,14 @@ void loop(){
     
 }
 
-// Code for Task 2: Implement Motion Primitives (DONE)
+/* Code for Task 2: Implement Motion Primitives (DONE)
 // Makes the robot turn in place to the left for a specified duration at a specified speed
 void turnLeft(float duration, float speed){
   int speedval = (int)(speed * 1000); //Convert m/s to mm/s
   int time = (int)(duration * 1000); //Convert s to ms
 
-  Motors::setSpeeds(-speedval, speedval);
-  delay(time);
+  Motors::setSpeeds(-speedval, speedval); // set speeds to turn left in place
+  delay(time); // delays for given duration
   halt();
 }
 
@@ -97,14 +97,14 @@ void turnRight(float duration, float speed){
   int speedval = (int)(speed * 1000); //Convert m/s to mm/s
   int time = (int)(duration * 1000); //Convert s to ms
 
-  Motors::setSpeeds(speedval, -speedval);
-  delay(time);
+  Motors::setSpeeds(speedval, -speedval); // set speeds to run right in place
+  delay(time); // delays for given duration
   halt();
 }
 
 // Makes the robot stay still (until another primitive function is called again)
 void halt(){
-  Motors::setSpeeds(0, 0);
+  Motors::setSpeeds(0, 0); // set speeds to halt
 }
 
 // Makes the robot move straight forward for a specified distance at a specified speed
@@ -112,58 +112,65 @@ void moveForward(float distance, float speed){
   int speedval = (int)(speed * 1000); //Convert m/s to mm/s
   int time = (int)((distance/speed) * 1000); //Convert s to ms
 
-  Motors::setSpeeds(speedval, speedval);
-  delay(time);
+  Motors::setSpeeds(speedval, speedval); // set speeds to move forward
+  delay(time); // delays for given time calculated with distance
   halt();
 }
 
-// Makes the robot move straight backward for a specified distance at a specified speed.
+// Makes the robot move straight backward for a specified distance at a specified speed
 void moveBackward(float distance, float speed){
   int speedval = (int)(speed * 1000); //Convert m/s to mm/s
   int time = (int)((distance/speed) * 1000); //Convert s to ms
 
-  Motors::setSpeeds(-speedval, -speedval);
-  delay(time);
+  Motors::setSpeeds(-speedval, -speedval); // set speeds to move backward
+  delay(time); // delays for given time calculated with distance
   halt();
 }
 
+//  Makes the robot move forward while turning left for a specified distance at a specified speed
 void moveForwardTurningLeft(float distance, float speed){
   int rightspeedval = (int)(speed * 1000); //Convert m/s to mm/s
   int leftspeedval = (int)(.75 * speed * 1000); //Inside wheel is at 75% speed of outside wheel (smooth turn)
   int time = (int)((distance/speed) * 1000); //Convert s to ms
 
-  Motors::setSpeeds(leftspeedval, rightspeedval);
-  delay(time);
+  Motors::setSpeeds(leftspeedval, rightspeedval); // set speeds to move forward while turning left
+  delay(time); // delays for given time calculated with distance
   halt();
 }
 
+// Makes the robot move forward while turning right for a specified distance at a specified speed
 void moveForwardTurningRight(float distance, float speed){
   int leftspeedval = (int)(speed * 1000); //Convert m/s to mm/s
   int rightspeedval = (int)(.75 * speed * 1000); //Inside wheel is at 75% speed of outside wheel (smooth turn)
   int time = (int)((distance/speed) * 1000); //Convert s to ms
 
-  Motors::setSpeeds(leftspeedval, rightspeedval);
-  delay(time);
+  Motors::setSpeeds(leftspeedval, rightspeedval); // set speeds to move forward while turning right
+  delay(time); // delays for given time calculated with distance
   halt();
 }
 
+// Makes the robot move backward while turning left for a specified distance at a specified speed
 void moveBackwardTurningLeft(float distance, float speed){
   int rightspeedval = (int)(speed * 1000); //Convert m/s to mm/s
   int leftspeedval = (int)(.75 * speed * 1000); //Inside wheel is at 75% speed of outside wheel (smooth turn)
   int time = (int)((distance/speed) * 1000); //Convert s to ms
 
-  Motors::setSpeeds(-leftspeedval, -rightspeedval);
-  delay(time);
+  Motors::setSpeeds(-leftspeedval, -rightspeedval); // set speeds to move backward while turning left
+  delay(time); // delays for given time calculated with distance
   halt();
 }
 
+// Makes the robot move backward while turning right for a specified distance at a specified speed
 void moveBackwardTurningRight(float distance, float speed){
   int leftspeedval = (int)(speed * 1000); //Convert m/s to mm/s
   int rightspeedval = (int)(.75 * speed * 1000); //Inside wheel is at 75% speed of outside wheel (smooth turn)
   int time = (int)((distance/speed) * 1000); //Convert s to ms
 
-  Motors::setSpeeds(-leftspeedval, -rightspeedval);
-  delay(time);
+  Motors::setSpeeds(-leftspeedval, -rightspeedval); // set speeds to move backward while turning right
+  delay(time); // delays for given time calculated with distance
   halt();
 }
+*/
+
+
 
