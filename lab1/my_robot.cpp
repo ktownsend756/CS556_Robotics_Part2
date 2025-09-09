@@ -14,8 +14,8 @@ void MyRobot::forward(int distance){
     int speedval = (int)(base_speed*1000); //Convert m/s to mm/s
     int time = (int)((distance/base_speed) * 1000); //Convert s to ms
 
-    motors.setSpeeds(speedval, speedval);
-    delay(time);
+    motors.setSpeeds(speedval, speedval); // set speeds to move forward
+    delay(time); // delays time calculated from distance
     halt();
 }
 
@@ -24,8 +24,8 @@ void MyRobot::backward(int distance){
     int speedval = (int)(base_speed*1000); //Convert m/s to mm/s
     int time = (int)((distance/base_speed) * 1000); //Convert s to ms
 
-    motors.setSpeeds(-speedval, -speedval);
-    delay(time);
+    motors.setSpeeds(-speedval, -speedval); // set speeds to move backward
+    delay(time); // delays time calculated from distance
     halt();
 }
 
@@ -34,8 +34,8 @@ void MyRobot::turn_left(int duration){
     int speedval = (int)(base_speed*1000); //Convert m/s to mm/s
     int time = (int)(duration * 1000); //Convert s to ms
 
-    motors.setSpeeds(-speedval, speedval);
-    delay(time);
+    motors.setSpeeds(-speedval, speedval); // set speeds to turn left in place
+    delay(time); // delays given duration
     halt();
 }
 
@@ -44,12 +44,12 @@ void MyRobot::turn_right(int duration){
     int speedval = (int)(base_speed*1000); //Convert m/s to mm/s
     int time = (int)(duration * 1000); //Convert s to ms
 
-    motors.setSpeeds(speedval, -speedval);
-    delay(time);
+    motors.setSpeeds(speedval, -speedval); // set speeds to turn right in place
+    delay(time); // delays given duration
     halt();
 }
 
 //Robot comes to a complete stop
 void MyRobot::halt(){
-    motors.setSpeeds(0, 0);
+    motors.setSpeeds(0, 0); // set speeds to halt
 }
