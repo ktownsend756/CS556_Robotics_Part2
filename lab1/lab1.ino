@@ -33,12 +33,12 @@ void loop(){
     moveForwardTurningRight(.5, .2);
     delay(3000);
 
-    //move forward while turning left
-    moveForwardTurningLeft(.5, .2);
-    delay(3000);
-
     //move backward while turning right
     moveBackwardTurningRight(.5, .2);
+    delay(3000);
+
+    //move forward while turning left
+    moveForwardTurningLeft(.5, .2);
     delay(3000);
 
     //move backward while turning left
@@ -171,6 +171,7 @@ void moveBackwardTurningRight(float distance, float speed){
   halt();
 }
 */
+
 
 
 
