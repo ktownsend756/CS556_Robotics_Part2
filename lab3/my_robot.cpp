@@ -27,32 +27,80 @@ void MyRobot::forward(int distance){
 
 //Robot moves backward a given distance using base speed
 void MyRobot::backward(int distance){
+    //NEW implementation (if it doesn't work use old one below)
     int speedval = (int)(base_speed*1000); //Convert m/s to mm/s
     int time = (int)((distance/base_speed) * 1000); //Convert s to ms
+    motors.setSpeeds(-speedval, -speedval);
 
+    unsigned long startTime = millis();
+    unsigned long elapsedTime = 0;
+    unsigned long duration = (unsigned long) time;
+
+    while(elapsedTime < duration){
+        elapsedTime = millis() - startTime;
+    }
+    halt();
+
+    /* OLD implementation
+    int speedval = (int)(base_speed*1000); //Convert m/s to mm/s
+    int time = (int)((distance/base_speed) * 1000); //Convert s to ms
+    
     motors.setSpeeds(-speedval, -speedval);
     delay(time);
     halt();
+    */
 }
 
 //Robot turns left for a given duration using base speed (in place)
 void MyRobot::turn_left(float duration){
+    //NEW implementation (if it doesn't work use old one below)
+    int speedval = (int)(base_speed*1000); //Convert m/s to mm/s
+    int time = (int)(duration * 1000); //Convert s to ms
+    motors.setSpeeds(-speedval, speedval);
+
+    unsigned long startTime = millis();
+    unsigned long elapsedTime = 0;
+    unsigned long interval = (unsigned long) time;
+
+    while(elapsedTime < interval){
+        elapsedTime = millis() - startTime;
+    }
+    halt();
+
+    /* OLD implementation
     int speedval = (int)(base_speed*1000); //Convert m/s to mm/s
     int time = (int)(duration * 1000); //Convert s to ms
 
     motors.setSpeeds(-speedval, speedval);
     delay(time);
     halt();
+    */
 }
 
 //Robot turns right for a given duration using base speed (in place)
-void MyRobot::turn_right(int duration){
+void MyRobot::turn_right(float duration){
+    //NEW implementation (if it doesn't work use old one below)
+    int speedval = (int)(base_speed*1000); //Convert m/s to mm/s
+    int time = (int)(duration * 1000); //Convert s to ms
+    motors.setSpeeds(speedval, -speedval);
+
+    unsigned long startTime = millis();
+    unsigned long elapsedTime = 0;
+    unsigned long interval = (unsigned long) time;
+
+    while(elapsedTime < interval){
+        elapsedTime = millis() - startTime;
+    }
+    halt();
+
+    /* OLD implementation
     int speedval = (int)(base_speed*1000); //Convert m/s to mm/s
     int time = (int)(duration * 1000); //Convert s to ms
 
     motors.setSpeeds(speedval, -speedval);
     delay(time);
     halt();
+    */
 }
 
 //Robot comes to a complete stop
