@@ -115,40 +115,92 @@ void loop() {
       */
       
       //(3.2c)  1-meter square clockwise
-      
+      //If encoderUpdate() doesn't work replace every instance of it with commented out code at the bottom of task 3.2c
       /*
       robot.forward(1);
-      robot.turn_right(0.8);
-      robot.forward(1);
-      robot.turn_right(0.8);
-      robot.forward(1);
-      robot.turn_right(0.8);
-      robot.forward(1);
-      robot.turn_right(0.8);
+      encoderUpdate(); 
+      odometry.update_odom(encCountsLeft,encCountsRight, x, y, theta);
 
+      robot.turn_right(0.8);
+      encoderUpdate(); 
+      odometry.update_odom(encCountsLeft,encCountsRight, x, y, theta);
+
+      robot.forward(1);
+      encoderUpdate(); 
+      odometry.update_odom(encCountsLeft,encCountsRight, x, y, theta);
+
+      robot.turn_right(0.8);
+      encoderUpdate(); 
+      odometry.update_odom(encCountsLeft,encCountsRight, x, y, theta);
+
+      robot.forward(1);
+      encoderUpdate(); 
+      odometry.update_odom(encCountsLeft,encCountsRight, x, y, theta);
+
+      robot.turn_right(0.8);
+      encoderUpdate(); 
+      odometry.update_odom(encCountsLeft,encCountsRight, x, y, theta);
+
+      robot.forward(1);
+      encoderUpdate(); 
+      odometry.update_odom(encCountsLeft,encCountsRight, x, y, theta);
+
+      robot.turn_right(0.8);
+      encoderUpdate(); 
+      odometry.update_odom(encCountsLeft,encCountsRight, x, y, theta);
+      
+      delay(5000); //Timeslot to position robot for the task
+      */
+      /*
       deltaL = encoders.getCountsAndResetLeft();
       deltaR = encoders.getCountsAndResetRight();
       encCountsLeft += deltaL;
       encCountsRight += deltaR;
-      
-
-      odometry.update_odom(encCountsLeft,encCountsRight, x, y, theta);
-      delay(5000);
       */
       
-      
-      //(3.3e)  1-meter square counterclockwise
+      //(3.2e)  1-meter square counterclockwise
+      //If encoderUpdate() doesn't work replace every instance of it with commented out code at the bottom of task 3.2e
       /*
       robot.forward(1);
+      encoderUpdate(); 
+      odometry.update_odom(encCountsLeft,encCountsRight, x, y, theta);
+
       robot.turn_left(0.8);
+      encoderUpdate(); 
+      odometry.update_odom(encCountsLeft,encCountsRight, x, y, theta);
+
       robot.forward(1);
+      encoderUpdate(); 
+      odometry.update_odom(encCountsLeft,encCountsRight, x, y, theta);
+
       robot.turn_left(0.8);
+      encoderUpdate(); 
+      odometry.update_odom(encCountsLeft,encCountsRight, x, y, theta);
+
       robot.forward(1);
+      encoderUpdate(); 
+      odometry.update_odom(encCountsLeft,encCountsRight, x, y, theta);
+
       robot.turn_left(0.8);
+      encoderUpdate(); 
+      odometry.update_odom(encCountsLeft,encCountsRight, x, y, theta);
+
       robot.forward(1);
+      encoderUpdate(); 
+      odometry.update_odom(encCountsLeft,encCountsRight, x, y, theta);
+
       robot.turn_left(0.8);
+      encoderUpdate(); 
+      odometry.update_odom(encCountsLeft,encCountsRight, x, y, theta);
+      
+      delay(5000); //Timeslot to position robot for the task
       */
-            
+      /*
+      deltaL = encoders.getCountsAndResetLeft();
+      deltaR = encoders.getCountsAndResetRight();
+      encCountsLeft += deltaL;
+      encCountsRight += deltaR;
+      */            
 }
 
 //Encoders update helper function Task (3.2a - 3.2e)
