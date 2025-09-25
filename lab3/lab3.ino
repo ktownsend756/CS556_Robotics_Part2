@@ -7,8 +7,8 @@ using namespace Pololu3piPlus32U4;
 
 //Motors motors;
 Encoders encoders;
-MyRobot robot(.1);
-//PrintOLED printOLED;
+MyRobot robot(.15);
+PrintOLED printOLED;
 
 
 
@@ -88,7 +88,7 @@ void loop() {
       //(TASK 3.1) IMPLEMENT ODOMETRY (DONE)
 
       /*UNCOMMENT Odometry.update_odom DOWN BELOW*/
-      //odometry.update_odom(encCountsLeft,encCountsRight, x, y, theta); //calculate robot's position
+      odometry.update_odom(encCountsLeft,encCountsRight, x, y, theta); //calculate robot's position
 
       /*NOW GO TO odometry.cpp file AND COMPLETE THE udate_odom FUNCTION. 
       IN odometry.cpp, ADD CODES TO ENABLE THE ROBOT TO 
@@ -101,10 +101,10 @@ void loop() {
 
       //(3.2a)  15-meter straight line down the hallway 
       /*
-      robot.forward(15);
-      encoderUpdate(); //If this doesn't work for some reason replace with commented out code below
+      robot.forward(150);
       odometry.update_odom(encCountsLeft,encCountsRight, x, y, theta);
-      delay(5000); //Timeslot to position robot for the task
+      printOLED.print_odom(x,y,theta);
+      delay(10000); //Timeslot to position robot for the task
       */
       
       /*
@@ -121,7 +121,7 @@ void loop() {
       encoderUpdate(); 
       odometry.update_odom(encCountsLeft,encCountsRight, x, y, theta);
 
-      robot.turn_right(0.8);
+      robot.turn_right(0.5);
       encoderUpdate(); 
       odometry.update_odom(encCountsLeft,encCountsRight, x, y, theta);
 
@@ -129,7 +129,7 @@ void loop() {
       encoderUpdate(); 
       odometry.update_odom(encCountsLeft,encCountsRight, x, y, theta);
 
-      robot.turn_right(0.8);
+      robot.turn_right(0.5);
       encoderUpdate(); 
       odometry.update_odom(encCountsLeft,encCountsRight, x, y, theta);
 
@@ -137,7 +137,7 @@ void loop() {
       encoderUpdate(); 
       odometry.update_odom(encCountsLeft,encCountsRight, x, y, theta);
 
-      robot.turn_right(0.8);
+      robot.turn_right(0.5);
       encoderUpdate(); 
       odometry.update_odom(encCountsLeft,encCountsRight, x, y, theta);
 
@@ -145,7 +145,7 @@ void loop() {
       encoderUpdate(); 
       odometry.update_odom(encCountsLeft,encCountsRight, x, y, theta);
 
-      robot.turn_right(0.8);
+      robot.turn_right(0.5);
       encoderUpdate(); 
       odometry.update_odom(encCountsLeft,encCountsRight, x, y, theta);
       
@@ -160,20 +160,12 @@ void loop() {
       
       //(3.2e)  1-meter square counterclockwise
       //If encoderUpdate() doesn't work replace every instance of it with commented out code at the bottom of task 3.2e
-      /*
+      
       robot.forward(1);
       encoderUpdate(); 
       odometry.update_odom(encCountsLeft,encCountsRight, x, y, theta);
 
-      robot.turn_left(0.8);
-      encoderUpdate(); 
-      odometry.update_odom(encCountsLeft,encCountsRight, x, y, theta);
-
-      robot.forward(1);
-      encoderUpdate(); 
-      odometry.update_odom(encCountsLeft,encCountsRight, x, y, theta);
-
-      robot.turn_left(0.8);
+      robot.turn_left(0.5);
       encoderUpdate(); 
       odometry.update_odom(encCountsLeft,encCountsRight, x, y, theta);
 
@@ -181,7 +173,7 @@ void loop() {
       encoderUpdate(); 
       odometry.update_odom(encCountsLeft,encCountsRight, x, y, theta);
 
-      robot.turn_left(0.8);
+      robot.turn_left(0.5);
       encoderUpdate(); 
       odometry.update_odom(encCountsLeft,encCountsRight, x, y, theta);
 
@@ -189,12 +181,20 @@ void loop() {
       encoderUpdate(); 
       odometry.update_odom(encCountsLeft,encCountsRight, x, y, theta);
 
-      robot.turn_left(0.8);
+      robot.turn_left(0.5);
+      encoderUpdate(); 
+      odometry.update_odom(encCountsLeft,encCountsRight, x, y, theta);
+
+      robot.forward(1);
+      encoderUpdate(); 
+      odometry.update_odom(encCountsLeft,encCountsRight, x, y, theta);
+
+      robot.turn_left(0.5);
       encoderUpdate(); 
       odometry.update_odom(encCountsLeft,encCountsRight, x, y, theta);
       
       delay(5000); //Timeslot to position robot for the task
-      */
+      
       /*
       deltaL = encoders.getCountsAndResetLeft();
       deltaR = encoders.getCountsAndResetRight();
