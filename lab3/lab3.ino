@@ -85,10 +85,11 @@ void loop() {
       Serial.println(encCountsRight);
       */
 
+      
       //(TASK 3.1) IMPLEMENT ODOMETRY (DONE)
 
       /*UNCOMMENT Odometry.update_odom DOWN BELOW*/
-      odometry.update_odom(encCountsLeft,encCountsRight, x, y, theta); //calculate robot's position
+      //odometry.update_odom(encCountsLeft,encCountsRight, x, y, theta); //calculate robot's position
 
       /*NOW GO TO odometry.cpp file AND COMPLETE THE udate_odom FUNCTION. 
       IN odometry.cpp, ADD CODES TO ENABLE THE ROBOT TO 
@@ -98,8 +99,8 @@ void loop() {
 
       //TEST ODOMETRY WHILE MOCING EACH OF THE THREE MOVEMENTS LISTED BELOW (ONE AT A TIME)
       //DO NOT DELETE CODE AFTER EACH TASK, COMMENT OUT INSTEAD
-
-      //(3.2a)  15-meter straight line down the hallway 
+      
+      //(3.2a)  15-meter straight line down the hallway (DONE)
       /*
       robot.forward(150);
       odometry.update_odom(encCountsLeft,encCountsRight, x, y, theta);
@@ -114,8 +115,7 @@ void loop() {
       encCountsRight += deltaR;
       */
       
-      //(3.2c)  1-meter square clockwise
-      //If encoderUpdate() doesn't work replace every instance of it with commented out code at the bottom of task 3.2c
+      //(3.2c)  1-meter square clockwise (DONE)
       /*
       robot.forward(1);
       encoderUpdate(); 
@@ -151,16 +151,9 @@ void loop() {
       
       delay(5000); //Timeslot to position robot for the task
       */
+
       /*
-      deltaL = encoders.getCountsAndResetLeft();
-      deltaR = encoders.getCountsAndResetRight();
-      encCountsLeft += deltaL;
-      encCountsRight += deltaR;
-      */
-      
-      //(3.2e)  1-meter square counterclockwise
-      //If encoderUpdate() doesn't work replace every instance of it with commented out code at the bottom of task 3.2e
-      
+      //(3.2e)  1-meter square counterclockwise (DONE)
       robot.forward(1);
       encoderUpdate(); 
       odometry.update_odom(encCountsLeft,encCountsRight, x, y, theta);
@@ -194,13 +187,7 @@ void loop() {
       odometry.update_odom(encCountsLeft,encCountsRight, x, y, theta);
       
       delay(5000); //Timeslot to position robot for the task
-      
-      /*
-      deltaL = encoders.getCountsAndResetLeft();
-      deltaR = encoders.getCountsAndResetRight();
-      encCountsLeft += deltaL;
-      encCountsRight += deltaR;
-      */            
+      */         
 }
 
 //Encoders update helper function Task (3.2a - 3.2e)
@@ -210,3 +197,4 @@ void encoderUpdate(){
   encCountsLeft += deltaL;
   encCountsRight += deltaR;
 }
+
