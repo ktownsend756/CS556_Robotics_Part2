@@ -11,6 +11,7 @@ MyRobot::MyRobot(float base_speed) {
 
 //Robot moves forward a given distance using base speed
 void MyRobot::forward(int distance){
+    //NEW implementation with millis instead of delay
     int speedval = (int)(base_speed*1000); //Convert m/s to mm/s
     int time = (int)((distance/base_speed) * 1000); //Convert s to ms
     motors.setSpeeds(speedval, speedval);
@@ -27,7 +28,7 @@ void MyRobot::forward(int distance){
 
 //Robot moves backward a given distance using base speed
 void MyRobot::backward(int distance){
-    //NEW implementation (if it doesn't work use old one below)
+    //NEW implementation with millis instead of delay
     int speedval = (int)(base_speed*1000); //Convert m/s to mm/s
     int time = (int)((distance/base_speed) * 1000); //Convert s to ms
     motors.setSpeeds(-speedval, -speedval);
@@ -40,20 +41,11 @@ void MyRobot::backward(int distance){
         elapsedTime = millis() - startTime;
     }
     halt();
-
-    /* OLD implementation
-    int speedval = (int)(base_speed*1000); //Convert m/s to mm/s
-    int time = (int)((distance/base_speed) * 1000); //Convert s to ms
-    
-    motors.setSpeeds(-speedval, -speedval);
-    delay(time);
-    halt();
-    */
 }
 
 //Robot turns left for a given duration using base speed (in place)
 void MyRobot::turn_left(float duration){
-    //NEW implementation (if it doesn't work use old one below)
+    //NEW implementation with millis instead of delay
     int speedval = (int)(base_speed*1000); //Convert m/s to mm/s
     int time = (int)(duration * 1000); //Convert s to ms
     motors.setSpeeds(-speedval, speedval);
@@ -66,20 +58,11 @@ void MyRobot::turn_left(float duration){
         elapsedTime = millis() - startTime;
     }
     halt();
-
-    /* OLD implementation
-    int speedval = (int)(base_speed*1000); //Convert m/s to mm/s
-    int time = (int)(duration * 1000); //Convert s to ms
-
-    motors.setSpeeds(-speedval, speedval);
-    delay(time);
-    halt();
-    */
 }
 
 //Robot turns right for a given duration using base speed (in place)
 void MyRobot::turn_right(float duration){
-    //NEW implementation (if it doesn't work use old one below)
+    //NEW implementation with millis instead of delay
     int speedval = (int)(base_speed*1000); //Convert m/s to mm/s
     int time = (int)(duration * 1000); //Convert s to ms
     motors.setSpeeds(speedval, -speedval);
@@ -91,16 +74,7 @@ void MyRobot::turn_right(float duration){
     while(elapsedTime < interval){
         elapsedTime = millis() - startTime;
     }
-    halt();
-
-    /* OLD implementation
-    int speedval = (int)(base_speed*1000); //Convert m/s to mm/s
-    int time = (int)(duration * 1000); //Convert s to ms
-
-    motors.setSpeeds(speedval, -speedval);
-    delay(time);
-    halt();
-    */
+    halt();  
 }
 
 //Robot comes to a complete stop
