@@ -20,6 +20,7 @@ class PDcontroller{
     double _output;
     double _clampedOutput;
 
+	// add on variables for PD Controller
     float _kd;
     double _prevError;
     double _prevTime;
@@ -29,3 +30,4 @@ class PDcontroller{
 };
 
 #endif
+
