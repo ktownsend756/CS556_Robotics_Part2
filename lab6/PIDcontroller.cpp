@@ -38,10 +38,10 @@ double PIDcontroller::update(double value, double target_value){
   if(_prevTime == 0){
     _output = _kp * _error; // no derivative on first update
   } else{
-    _accumulatedError += _error * dt;
-    _accumulatedError = constrain(_accumulatedError, -_clamp_i, _clamp_i);
+    _accumulatedError += _error * dt; // integral sum or errors
+    _accumulatedError = constrain(_accumulatedError, -_clamp_i, _clamp_i); // constrain accumulated error to clamp i
     _derivative = (_error - _prevError) / dt; // de/dt
-    _output = (_kp*_error) + (_ki * _accumulatedError) + (_kd*_derivative); // add together
+    _output = (_kp*_error) + (_ki * _accumulatedError) + (_kd*_derivative); // add together PID
   }
 
   // constrain to clamp output
@@ -53,3 +53,4 @@ double PIDcontroller::update(double value, double target_value){
   return _clampedOutput;
   
 }
+
