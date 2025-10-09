@@ -13,11 +13,11 @@ using namespace Pololu3piPlus32U4;
 #define gearRatio 75
 
 //Update kp and kd based on your testing
-#define minOutput -100
-#define maxOutput 100
-#define kp 0
-#define kd 0
-#define base_speed 50
+#define minOutput -250
+#define maxOutput 250
+#define kp 50
+#define kd 30
+#define base_speed 200
 
 Motors motors;
 Servo servo;
@@ -34,6 +34,7 @@ void setup() {
   servo.attach(5);
   delay(40);
   //Move Sonar to desired direction using Servo
+  servo.write(180);
 }
 
 void loop() {
@@ -42,7 +43,7 @@ void loop() {
 
 
   //UNCOMMENT AFTER IMPLEMENTING PDcontroller
-  //PDout = PDcontroller.update(wallDist, distFromWall); //uncomment if using PDcontroller 
+  double PDout = PDcontroller.update(wallDist, distFromWall); //uncomment if using PDcontroller 
 
   //(LAB 5 - TASK 3.1) IMPLEMENT PDCONTROLLER 
   
@@ -56,7 +57,10 @@ void loop() {
   AND SET THE MOTOR SPEEDS. CHANGE THE KP, KD, AND CLAMPING VALUES AT THE TOP
   TO TEST (B-D).
   Hint: Also use baseSpeed when setting motor speeds*/
-
+  int leftSpeed = base_speed + PDout;
+  int rightSpeed = base_speed - PDout;
+  motors.setSpeeds(leftSpeed, rightSpeed);
   //Also print outputs to serial monitor for testing purposes
+  Serial.println(wallDist);
 
 }
