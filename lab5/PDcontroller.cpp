@@ -26,26 +26,24 @@ double PDcontroller::update(double value, double target_value){
 
            Again, you need to return actuator controller value (_clampOut)
   */
-  _error = target_value - value;
+  _error = target_value - value; // error difference
   long currentTime = millis();
-  double time = (currentTime - _prevTime) / 1000;
+  double time = (currentTime - _prevTime) / 1000; // change of time in seconds
 
   if(_prevTime == 0){
-    _output = _kp * _error;
+    _output = _kp * _error; // no derivative on first update
   } else{
-    _derivative = (_error - _prevError) / time;
-    _output = (_kp*_error) + (_kd*_derivative);
+    _derivative = (_error - _prevError) / time; // de/dt
+    _output = (_kp*_error) + (_kd*_derivative); // add together
   }
 
-  if(_output > _maxOutput) 
-    _clampedOutput = _maxOutput;
-  else if (_output < _minOutput) 
-    _clampedOutput = _minOutput;
-  else 
-    _clampedOutput = _output;
+  // constrain to clamp output
+  _clampedOutput = constrain(_output, _minOutput, _maxOutput);
 
+  // update prev values
   _prevError = _error;
   _prevTime = currentTime;
   return _clampedOutput;
 }
+
 
