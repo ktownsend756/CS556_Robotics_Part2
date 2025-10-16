@@ -79,7 +79,7 @@ void loop() {
   Serial.println(PIDout_theta);
   Serial.println(PIDout_distance);
 
-  /*TASK 2.1
+  /*TASK 2.1 (DONE)
   Move your PIDController.h and PIDController.cpp files here to use for the following tasks.
   Also move your odometry.h and odometry.cpp if you decide to use it for 
   measuring the angle of your robot.
@@ -94,6 +94,7 @@ void loop() {
   
   Write your code below and comment out when moving to the next task.*/
 
+  /*
   angle_to_goal = atan2(goal_y - y, goal_x - x);
   actual_angle = atan2(sin(theta), cos(theta));
   PIDout_theta = pidcontroller.update(actual_angle, angle_to_goal);
@@ -102,12 +103,28 @@ void loop() {
   int rightspeed = base_speedAng + PIDout_theta;
 
   motors.setSpeeds(leftspeed, rightspeed);
-  
+  */
+
   /*TASK 2.2
   Improve the baseline solution by telling the robot to stop when it gets close 
   enough to the goal.
   Write your code below and comment out when moving to the next task.*/
+  
+  angle_to_goal = atan2(goal_y - y, goal_x - x);
+  actual_angle = atan2(sin(theta), cos(theta));
+  PIDout_theta = pidcontroller.update(actual_angle, angle_to_goal);
 
+  int leftspeed = base_speedAng - PIDout_theta;
+  int rightspeed = base_speedAng + PIDout_theta;
+
+  dist_to_goal = sqrt(pow(goal_x - x, 2) + pow(goal_y - y, 2));
+  if(dist_to_goal <= .1){ //checks if goal is less than 10cm away, and makes the robot halt if so
+    motors.setSpeeds(0,0);
+  }
+  else{ //Otherwise robot continues to move at the same speed towards the goal
+    motors.setSpeeds(leftspeed, rightspeed);
+  }
+  
   /*TASK 2.3
   Improve the solution further by using a second PID controller to control the velocity
   as it goes towards the goal.
