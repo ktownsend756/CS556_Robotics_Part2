@@ -105,11 +105,12 @@ void loop() {
   motors.setSpeeds(leftspeed, rightspeed);
   */
 
-  /*TASK 2.2
+  /*TASK 2.2 (DONE)
   Improve the baseline solution by telling the robot to stop when it gets close 
   enough to the goal.
   Write your code below and comment out when moving to the next task.*/
-  
+
+  /*
   angle_to_goal = atan2(goal_y - y, goal_x - x);
   actual_angle = atan2(sin(theta), cos(theta));
   PIDout_theta = pidcontroller.update(actual_angle, angle_to_goal);
@@ -124,11 +125,27 @@ void loop() {
   else{ //Otherwise robot continues to move at the same speed towards the goal
     motors.setSpeeds(leftspeed, rightspeed);
   }
-  
-  /*TASK 2.3
+  */
+
+  /*TASK 2.3 (DONE)
   Improve the solution further by using a second PID controller to control the velocity
   as it goes towards the goal.
   Write your code below.*/
 
+  /*
+  angle_to_goal = atan2(goal_y - y, goal_x - x);
+  actual_angle = atan2(sin(theta), cos(theta));
+  PIDout_theta = pidcontroller.update(actual_angle, angle_to_goal);
+
+  
+  dist_to_goal = sqrt(pow(goal_x - x, 2) + pow(goal_y - y, 2));
+  //Track the distance between robot's current position and the goal and use output to control velocity
+  PIDout_distance = pidcontroller2.update(dist_to_goal, 0); 
+
+  //PIDout_distance is the new velocity that replaces base_speed
+  int leftspeed = PIDout_distance - PIDout_theta;
+  int rightspeed = PIDout_distance + PIDout_theta;
+  motors.setSpeeds(leftspeed, rightspeed);
+  */
 
 }
