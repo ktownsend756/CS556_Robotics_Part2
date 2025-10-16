@@ -40,9 +40,9 @@ PIDcontroller pidcontroller(kpAng, kiAng, kdAng, minOutputAng, maxOutputAng, cla
 PIDcontroller pidcontroller2(kpVel, kiVel, kdVel, minOutputVel, maxOutputVel, clamp_iVel);
 //Feel free to use this in your PD/PID controller for target values
 // Given goals in cm and radians
-const float goal_x = 1 
-const float goal_y = 1
-const float goal_theta = ... // Must put in radians
+const float goal_x = 1;
+const float goal_y = 1;
+const float goal_theta = 1.57; // Must put in radians
 
 //odometry
 int16_t deltaL=0, deltaR=0;
@@ -77,7 +77,7 @@ void loop() {
   //Lab 7
   //Note: To help with testing, print the theta and PID outputs to serial monitor.
   Serial.println(PIDout_theta);
-  Seral.println(PIDout_distance);
+  Serial.println(PIDout_distance);
 
   /*TASK 2.1
   Move your PIDController.h and PIDController.cpp files here to use for the following tasks.
@@ -94,14 +94,14 @@ void loop() {
   
   Write your code below and comment out when moving to the next task.*/
 
-  angle_to_goal = atan2(goal_y, goal_x);
-  actual_angle = atan2(y, x);
-  PIDout_theta = pidcontroller.update(acutal_angle, double angle_to_goal);
+  angle_to_goal = atan2(goal_y - y, goal_x - x);
+  actual_angle = atan2(sin(theta), cos(theta));
+  PIDout_theta = pidcontroller.update(actual_angle, angle_to_goal);
 
   int leftspeed = base_speedAng - PIDout_theta;
-  int rightspeed = base_speedAng - PIDout_theta;
+  int rightspeed = base_speedAng + PIDout_theta;
 
-  motors.setSpeeds(leftspeed,  rightspeed);
+  motors.setSpeeds(leftspeed, rightspeed);
   
   /*TASK 2.2
   Improve the baseline solution by telling the robot to stop when it gets close 
