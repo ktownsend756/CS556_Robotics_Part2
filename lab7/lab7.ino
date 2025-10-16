@@ -19,19 +19,19 @@ Encoders encoders;
 //Update kp, kd, and ki based on your testing (First PIDcontroller for angle)
 #define minOutputAng -100
 #define maxOutputAng 100
-#define kpAng 0 //Tune Kp here
-#define kdAng 0//Tune Kd here
-#define kiAng 0 //Tune Ki here
-#define clamp_iAng 0 //Tune ki integral clamp here
+#define kpAng 100 //Tune Kp here
+#define kdAng 20//Tune Kd here
+#define kiAng 2 //Tune Ki here
+#define clamp_iAng 15 //Tune ki integral clamp here
 #define base_speedAng 50
 
 //Update kp, kd, and ki based on your testing (Second PIDcontroller for velocity) (Task 2.3)
-#define minOutputVel -100
-#define maxOutputVel 100
-#define kpVel 0 //Tune Kp here
-#define kdVel 0 //Tune Kd here
-#define kiVel 0 //Tune Ki here
-#define clamp_iVel 0 //Tune ki integral clamp here
+#define minOutputVel -50
+#define maxOutputVel 150
+#define kpVel 50 //Tune Kp here
+#define kdVel 35 //Tune Kd here
+#define kiVel 5 //Tune Ki here
+#define clamp_iVel 20 //Tune ki integral clamp here
 #define base_speedVel 50
 
 Odometry odometry(diaL, diaR, w, nL, nR, gearRatio, DEAD_RECKONING); //Uncomment if using odometry class
@@ -40,9 +40,9 @@ PIDcontroller pidcontroller(kpAng, kiAng, kdAng, minOutputAng, maxOutputAng, cla
 PIDcontroller pidcontroller2(kpVel, kiVel, kdVel, minOutputVel, maxOutputVel, clamp_iVel);
 //Feel free to use this in your PD/PID controller for target values
 // Given goals in cm and radians
-const float goal_x = 1;
-const float goal_y = 1;
-const float goal_theta = 1.57; // Must put in radians
+const float goal_x = 100;
+const float goal_y = 100;
+const float goal_theta = .785; // Must put in radians
 
 //odometry
 int16_t deltaL=0, deltaR=0;
@@ -118,9 +118,9 @@ void loop() {
   int leftspeed = base_speedAng - PIDout_theta;
   int rightspeed = base_speedAng + PIDout_theta;
 
-  dist_to_goal = sqrt(pow(goal_x - x, 2) + pow(goal_y - y, 2));
-  if(dist_to_goal <= .1){ //checks if goal is less than 10cm away, and makes the robot halt if so
-    motors.setSpeeds(0,0);
+  dist_to_goal = sqrt(pow((goal_x - x), 2) + pow((goal_y - y), 2));
+  if(dist_to_goal <= 10){ //checks if goal is less than 10cm away, and makes the robot halt
+    motors.setSpeeds(0, 0);
   }
   else{ //Otherwise robot continues to move at the same speed towards the goal
     motors.setSpeeds(leftspeed, rightspeed);
@@ -132,20 +132,32 @@ void loop() {
   as it goes towards the goal.
   Write your code below.*/
 
-  /*
+  
   angle_to_goal = atan2(goal_y - y, goal_x - x);
+  Serial.print("Angle to goal: ");
+  Serial.println(angle_to_goal);
   actual_angle = atan2(sin(theta), cos(theta));
+  Serial.print("Actual Angle: ");
+  Serial.println(actual_angle);
   PIDout_theta = pidcontroller.update(actual_angle, angle_to_goal);
 
   
-  dist_to_goal = sqrt(pow(goal_x - x, 2) + pow(goal_y - y, 2));
+  dist_to_goal = sqrt(pow(x - goal_x, 2) + pow(y - goal_x, 2));
+  Serial.print("Distance to Goal: ");
+  Serial.println(dist_to_goal);
+  
   //Track the distance between robot's current position and the goal and use output to control velocity
-  PIDout_distance = pidcontroller2.update(dist_to_goal, 0); 
+  PIDout_distance = pidcontroller2.update(0, dist_to_goal); 
 
   //PIDout_distance is the new velocity that replaces base_speed
-  int leftspeed = PIDout_distance - PIDout_theta;
-  int rightspeed = PIDout_distance + PIDout_theta;
-  motors.setSpeeds(leftspeed, rightspeed);
-  */
+  int leftspeed = int(PIDout_distance - PIDout_theta);
+  int rightspeed = int(PIDout_distance + PIDout_theta);
 
+  if(dist_to_goal <= 10){ //checks if goal is less than 10cm away, and makes the robot halt
+    motors.setSpeeds(0, 0);
+  }
+  else{ //Otherwise robot continues to move at the same speed towards the goal
+    motors.setSpeeds(leftspeed, rightspeed);
+  }
+  
 }
