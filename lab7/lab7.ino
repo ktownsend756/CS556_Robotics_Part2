@@ -76,7 +76,9 @@ void loop() {
 
   //Lab 7
   //Note: To help with testing, print the theta and PID outputs to serial monitor.
+  Serial.print("PIDout_theta: ");
   Serial.println(PIDout_theta);
+  Serial.print("PIDout_distance: ");
   Serial.println(PIDout_distance);
 
   /*TASK 2.1 (DONE)
@@ -142,7 +144,7 @@ void loop() {
   PIDout_theta = pidcontroller.update(actual_angle, angle_to_goal);
 
   
-  dist_to_goal = sqrt(pow(x - goal_x, 2) + pow(y - goal_x, 2));
+  dist_to_goal = sqrt(pow(x - goal_x, 2) + pow(y - goal_y, 2));
   Serial.print("Distance to Goal: ");
   Serial.println(dist_to_goal);
   
