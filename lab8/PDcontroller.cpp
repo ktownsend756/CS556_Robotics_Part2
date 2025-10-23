@@ -2,10 +2,10 @@
 #include "PDcontroller.h"
 using namespace Pololu3piPlus32U4;
 
-PDcontroller::PDcontroller(float kp_line, float kd_line, double minOutput, double maxOutput) {
+PDcontroller::PDcontroller(float kp, float kd, double minOutput, double maxOutput) {
   // initialize the private varaibles from Pcontroller.h here
-  _kp_line = kp_line;
-  _kd_line = kd_line;
+  _kp = kp;
+  _kd = kd;
   _minOutput = minOutput;
   _maxOutput = maxOutput;
   _error = 0;
