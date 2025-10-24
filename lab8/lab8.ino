@@ -9,8 +9,8 @@ Motors motors;
 #define minOutput -100
 #define maxOutput 100
 #define baseSpeed 100
-#define kp_line 0
-#define kd_line 0
+#define kp_line 1
+#define kd_line .5
 
 PDcontroller pd_line(kp_line, kd_line, minOutput, maxOutput);
 
@@ -30,6 +30,8 @@ void calibrateSensors()
   //TASK 2.1a (DONE)
   //Implement calibration for IR Sensors
   //Hint: Have your robot turn to the left and right to calibrate sensors.
+
+  /*
   unsigned long stop = millis() + 1000; // 1 sec duration
   while (millis() < stop) {   //Pivot left and read values
       motors.setSpeeds(-100, 100);
@@ -43,7 +45,17 @@ void calibrateSensors()
       lineSensors.calibrate();
       delay(2);
   }
+  */
 
+  for(int i = 0; i<140; i++){
+    if(i > 25 && i < 95){
+      motors.setSpeeds(-100, 100); // Pivot counter-clockwise
+    }
+    else{
+      motors.setSpeeds(100, -100); // Pivot clockwise
+    }
+    lineSensors.calibrate();
+  }
   motors.setSpeeds(0, 0); //Halts robot after calibration  
 }
 
@@ -71,8 +83,8 @@ void loop(){
   calibrationSpeed = pd_line.update(robotPosition, lineCenter);
 
   //Add adjustment to base speed
-  int leftSpeed = baseSpeed + calibrationSpeed;
-  int rightSpeed = baseSpeed - calibrationSpeed;
+  int leftSpeed = baseSpeed - calibrationSpeed;
+  int rightSpeed = baseSpeed + calibrationSpeed;
 
   motors.setSpeeds(leftSpeed, rightSpeed);
 
