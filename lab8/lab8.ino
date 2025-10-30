@@ -30,23 +30,7 @@ void calibrateSensors()
   //TASK 2.1a (DONE)
   //Implement calibration for IR Sensors
   //Hint: Have your robot turn to the left and right to calibrate sensors.
-
-  /*
-  unsigned long stop = millis() + 1000; // 1 sec duration
-  while (millis() < stop) {   //Pivot left and read values
-      motors.setSpeeds(-100, 100);
-      lineSensors.calibrate();
-      delay(2);
-  }
-
-  stop = millis() + 2000; // 2 sec duration
-  while (millis() < stop) {   //Pivot right and read values
-      motors.setSpeeds(100, -100);
-      lineSensors.calibrate();
-      delay(2);
-  }
-  */
-
+  
   for(int i = 0; i<140; i++){
     if(i > 25 && i < 95){
       motors.setSpeeds(-100, 100); // Pivot counter-clockwise
