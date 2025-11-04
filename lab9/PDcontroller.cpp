@@ -29,8 +29,7 @@ double PDcontroller::update(double value, double target_value){
   
   _error = target_value - value; // error difference
   long currentTime = millis();
-  //double time = (currentTime - _prevTime) / 1000; // change of time in seconds
-  double time = (currentTime - _prevTime) / (currentTime - _prevTime); //new delta time implementation
+  double time = (currentTime - _prevTime) / 1000; // change of time in seconds
   
   if(_prevTime == 0){
     _output = _kp * _error; // no derivative on first update
