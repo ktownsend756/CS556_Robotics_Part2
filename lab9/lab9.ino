@@ -11,13 +11,13 @@ Servo servo;
 
 Sonar sonar(4);
 
-#define minOutput -100
-#define maxOutput 100
+#define minOutput -50
+#define maxOutput 50
 #define baseSpeed 100
-#define kp_line 0
-#define kd_line 0
-#define kp_obs 0
-#define kd_obs 0
+#define kp_line 0.1
+#define kd_line 0.0005
+#define kp_obs 40
+#define kd_obs 5
 
 PDcontroller pd_line(kp_line, kd_line, minOutput, maxOutput);
 PDcontroller pd_obs(kp_obs, kd_obs, minOutput, maxOutput);
@@ -36,8 +36,8 @@ bool isOnBlack;
 
 //Wall Following
 int PDout;
-float wallDist;
-int distFromWall = 10;
+double wallDist;
+const double distFromWall = 15.0;
 
 int task = 0; // Line Following = 0 / Wall Following = 1
 
@@ -83,11 +83,13 @@ void loop(){
     lineFollowing();
 
   }
-  // wall following
   else if(task == 1){
     Serial.println("Task: Wall Following");
+
     wallFollowing();
   }
+
+
 
 }
 
@@ -98,6 +100,7 @@ void loop(){
 
 void lineFollowing()
 {
+  servo.write(90);
   //Get robot's actual position
   robotPosition = lineSensors.readLineBlack(lineSensorValues);
   Serial.print("Robot's position: ");
@@ -111,41 +114,46 @@ void lineFollowing()
   int rightSpeed = baseSpeed + calibrationSpeed;
 
   motors.setSpeeds(leftSpeed, rightSpeed);
-
   detectObject();
 }
 
 void detectObject(){
   // sonar reads distance of object
   float dist = sonar.readDist();
-    if(dist > 0 && dist < 20){ // if object is between 0-20 it stops and claims it detected an object
-      motors.setSpeeds(0,0);
-      Serial.println("Obstacle Detected");
-      delay(1000);
-      task = 1; // switch to wall following
-    }
+  if(dist > 0 && dist < 5){ // if object is between 0-20 it stops and claims it detected an object
+    motors.setSpeeds(0,0);
+    Serial.println("Obstacle Detected");
+    delay(1000);
+    servo.write(0);
+    task = 1; // switch to wall following
+    motors.setSpeeds(-100,100);
+    delay(600);
+    motors.setSpeeds(100,100);
+    delay(150);
+  }
 }
 
 void wallFollowing()
 {
   //Hint: Your robot shouldn't only be following the wall. It should also be looking
   //      for something else while following the wall.
-  servo.write(45); // turn servo to read wall distance
-  wallDist = sonar.readDist();
-  servo.write(90);
+  servo.write(0); // turn servo to read wall distance
+  delay(500);
 
-  if (wallDist <=0) return; // error check
+  while(!isOnBlack){
+    wallDist = sonar.readDist();
 
-  float error = distFromWall - wallDist; // calculate error from real and goal
-  PDout = pd_obs.update(error,0); // pdcontroller with error and target
 
-  // set wheel speeds
-  int left = baseSpeed + PDout;
-  int right = baseSpeed - PDout;
-  motors.setSpeeds(left,right);
+    PDout = pd_obs.update(wallDist, distFromWall); // pdcontroller with error and target
 
-  detectBlackLine();
+    // set wheel speeds
+  
+    motors.setSpeeds(int ((baseSpeed + PDout)*0.5), int ((baseSpeed - PDout)*0.5));
+    detectBlackLine();
+  }
+  task = 0;
 
+  
 }
 
 void detectBlackLine()
@@ -153,9 +161,9 @@ void detectBlackLine()
   lineSensors.read(lineDetectionValues);
 
     // Threshold value to detect black (adjust based on calibration)
-    const int blackThreshold = 1500; 
+    const int blackThreshold = 2000; 
 
-    // Check if the robot is on a black square
+    // Check if the robot is on a black
     for (int i = 0; i < 5; i++) {
         Serial.println(lineDetectionValues[i]);
         if (lineDetectionValues[i] > blackThreshold) {
@@ -164,9 +172,12 @@ void detectBlackLine()
             // states line is detected, stops, and switches task to line follow
             motors.setSpeeds(0,0);
             Serial.println("Line Detected");
-            task = 0;
+            isOnBlack = true;
             break;
         }
     }
 }
+
+
+
 
