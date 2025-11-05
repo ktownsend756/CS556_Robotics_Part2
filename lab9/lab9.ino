@@ -120,7 +120,7 @@ void lineFollowing()
 void detectObject(){
   // sonar reads distance of object
   float dist = sonar.readDist();
-  if(dist > 0 && dist < 5){ // if object is between 0-20 it stops and claims it detected an object
+  if(dist > 0 && dist < 5){ // if object is between 0-5 it stops and claims it detected an object
     motors.setSpeeds(0,0);
     Serial.println("Obstacle Detected");
     delay(1000);
@@ -177,6 +177,7 @@ void detectBlackLine()
         }
     }
 }
+
 
 
 
