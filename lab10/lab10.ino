@@ -61,6 +61,8 @@ float theta_last = 0.0;
 
 static inline float wrapPi(float a){ while(a <= -PI) a += 2*PI; while(a > PI) a -= 2*PI; return a; }
 
+float goal_theta = PI/2; //Goal theta for movement function
+
 //Comment out if using motion primitives
 PIDcontroller PIDcontroller(kp, ki, kd, minOutput, maxOutput, clamp_i);
 double PID_OUT_ANGLE, PID_OUT_DISTANCE;
@@ -97,7 +99,7 @@ void loop() {
   //Parameters are change from current and past odometer values
   //Use qrapPi function to Wrap dθ when propagating particles
   //TODO: Put code under here 
-
+  movement();
 
 
   //Measaure, estimation, and resample
@@ -113,9 +115,9 @@ void loop() {
     
   //save last odometer reading
   //TODO: Fill in "..."
-  x_last = ...
-  y_last = ...
-  theta_last = ...
+  x_last = x
+  y_last = y
+  theta_last = theta
     
   iter++;
     
@@ -125,6 +127,7 @@ void loop() {
 
 void movement(){
   // Remote-Controlling 
+  int leftSpeed = 0, rightSpeed = 0;
   if(buttonA.isPressed()){ //turn left
     //Note, if you use PIDconrollers,know that PID assumes: output = Kp*(setpoint - measured) + ...
     // Using a relative setpoint makes each button press add/subtract 90°
@@ -136,21 +139,28 @@ void movement(){
 
     //movement function here
     //TODO: Put code under here
+    PID_OUT_ANGLE = PIDcontroller.update(theta, goal_theta);
 
-
+    leftSpeed = -PID_OUT_ANGLE;
+    rightSpeed = PID_OUT_ANGLE;
+    motorsP.setSpeeds(leftSpeed, rightSpeed);
 
     Serial.print("Left pressed!\n");
   } else if(buttonB.isPressed()){ // drive forward
     //movement function here
     //TODO: Put code under here
-
+    
 
 
     Serial.print("Forward pressed!\n");
   } else if(buttonC.isPressed()){ // turn right
     //movement function here
     //TODO: Put code under here
-    
+    PID_OUT_ANGLE = PIDcontroller.update(theta_last, -goal_theta);
+
+    leftSpeed = PID_OUT_ANGLE;
+    rightSpeed = -PID_OUT_ANGLE;
+    motorsP.setSpeeds(leftSpeed, rightSpeed);
 
 
     Serial.print("Right pressed!\n");
