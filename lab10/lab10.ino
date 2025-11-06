@@ -7,6 +7,7 @@ using namespace Pololu3piPlus32U4;
 #include "odometry.h"
 #include "Map.h"
 #include "sonar.h"
+#include "PIDcontroller.h"
 
 
 Map worldMap; // one map for the program
@@ -110,7 +111,6 @@ void loop() {
   //TODO: Put code under here 
   particle.measure();
   particle.estimate_position();
-  particle.resample();
 
 
   // Display all particle locations and estimated robot location on screen   
@@ -120,9 +120,9 @@ void loop() {
     
   //save last odometer reading
   //TODO: Fill in "..."
-  x_last = x
-  y_last = y
-  theta_last = theta
+  x_last = x;
+  y_last = y;
+  theta_last = theta;
     
   iter++;
     
@@ -201,4 +201,3 @@ void movement(){
   }
  
 }
-
