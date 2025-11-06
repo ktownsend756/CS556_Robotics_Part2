@@ -89,23 +89,25 @@ void ParticleFilter::measure(){
   // Grid scale: 60 cm map, 3 cells => 20 cm per grid unit
   //TODO: Put code under here
   
-  // Read sonar ONCE per update (use same z for all particles)
-  //TODO: Put code under here
 
+  // Read sonar ONCE per update (use same z for all particles)
+  //TODO: Put code under here (DONE)
+  float z_meas = _sonar.readDist();
 
   // We'll accumulate log-weights first for numerical stability
   float maxlog = -1e30f;
 
-  //For loop 
+  //For loop
+  for(int i = 0; i < _num_particles; i++){
     // Convert particle (cm) -> grid units expected by Map::closest_distance
-    //TODO: Put code under here
+    //TODO: Put code under here (DONE)
    float origin[2] = {
-      ...
-      ...
+      _particle_list[i].x / 20,
+      _particle_list[i].y / 20
     };
 
     //calculate float particledist which is particle distance using sonar data
-    //TODO: Put code under here
+    //TODO: Put code under here (DONE)
     float particledist = _mp->closest_distance(origin, _particle_list[i].angle); // in grid units
 
     //inside the same loop, per particle
@@ -115,15 +117,22 @@ void ParticleFilter::measure(){
     float loglik = -0.5f * ( (z - expected_cm)*(z - expected_cm)/s2 + logf(2.0f * PI * s2) );
 
     // store log-weights (use previous weight in log-domain; guard against 0)
-
+    _particle_list[i].probability = loglik;
     // track maximum log-weight for the max-trick
-
+    if(loglik > maxlog){
+      maxlog = loglik;
+    }
+    
+  }
   //End of for loop
 
 
   float norm_factor = 0.0f;  // reuse your variable name as the sum of linear weights
   // Define a new loop to convert to weights safely (max-trick), then normalize
-
+  for(int i = 0; i < _num_particles; i++){
+    _particle_list[i].probability = exp(_particle_list[i].probability - maxlog);
+    norm_factor += _particle_list[i].probability;
+  }
 
   //take each probability and normalize by norm_factor (in a for loop)
   float maxprob = 0.0f;
@@ -149,6 +158,7 @@ void ParticleFilter::measure(){
   // TODO Resample particles around likely hypotheses
   //Outside all for loops, call resample(...) at the end of function
   //TODO: Put code under here
+  resample(maxprob);
 }
 
 
@@ -220,4 +230,3 @@ void ParticleFilter::estimate_position(){
   //End of for loop
 
 }
-
