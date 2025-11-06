@@ -61,7 +61,6 @@ float theta_last = 0.0;
 
 static inline float wrapPi(float a){ while(a <= -PI) a += 2*PI; while(a > PI) a -= 2*PI; return a; }
 
-float goal_theta = PI/2; //Goal theta for movement function
 
 //Comment out if using motion primitives
 PIDcontroller PIDcontroller(kp, ki, kd, minOutput, maxOutput, clamp_i);
@@ -99,7 +98,7 @@ void loop() {
   //Parameters are change from current and past odometer values
   //Use qrapPi function to Wrap dθ when propagating particles
   //TODO: Put code under here 
-  movement();
+  
 
 
   //Measaure, estimation, and resample
@@ -128,6 +127,9 @@ void loop() {
 void movement(){
   // Remote-Controlling 
   int leftSpeed = 0, rightSpeed = 0;
+  float goal_theta; //Goal theta orientation
+  float goal_x, goal_y;
+  double dist_err; //Goal position (x,y)
   if(buttonA.isPressed()){ //turn left
     //Note, if you use PIDconrollers,know that PID assumes: output = Kp*(setpoint - measured) + ...
     // Using a relative setpoint makes each button press add/subtract 90°
@@ -139,29 +141,54 @@ void movement(){
 
     //movement function here
     //TODO: Put code under here
-    PID_OUT_ANGLE = PIDcontroller.update(theta, goal_theta);
+    goal_theta = wrapPi(theta + PI/2); //set goal_theta from current position for 90 degree left turn
+
+    PID_OUT_ANGLE = PIDcontroller.update(theta, goal_theta); 
 
     leftSpeed = -PID_OUT_ANGLE;
     rightSpeed = PID_OUT_ANGLE;
     motorsP.setSpeeds(leftSpeed, rightSpeed);
+
+    if(fabs(wrapPi(goal_theta - theta)) < 0.017){ //Halt robot if it's within 1 degree of goal theta
+        motorsP.setSpeeds(0, 0);
+    }
 
     Serial.print("Left pressed!\n");
   } else if(buttonB.isPressed()){ // drive forward
     //movement function here
     //TODO: Put code under here
     
+    //Set the goal to be 20cm forward from current position
+    goal_x = x + 20 * cos(theta);
+    goal_y = y + 20 * sin(theta);
 
+    dist_err = sqrt(pow(goal_x - x, 2) + pow(goal_y - y, 2));
+
+    PID_OUT_DISTANCE = PIDcontroller.update(0, dist_err);
+ 
+    leftSpeed = rightSpeed = PID_OUT_DISTANCE;
+    
+    motorsP.setSpeeds(leftSpeed, rightSpeed);
+
+    if(fabs(dist_err) < 0.5){ //Halt robot once it is within half a centimeter from goal position
+        motorsP.setSpeeds(0, 0);
+    }
 
     Serial.print("Forward pressed!\n");
   } else if(buttonC.isPressed()){ // turn right
     //movement function here
     //TODO: Put code under here
-    PID_OUT_ANGLE = PIDcontroller.update(theta_last, -goal_theta);
+    goal_theta = wrapPi(theta - PI/2); //set goal_theta from current position for 90 degree right turn
+
+    PID_OUT_ANGLE = PIDcontroller.update(theta, goal_theta); 
 
     leftSpeed = PID_OUT_ANGLE;
     rightSpeed = -PID_OUT_ANGLE;
     motorsP.setSpeeds(leftSpeed, rightSpeed);
 
+    if(fabs(wrapPi(goal_theta - theta)) < 0.017){ //Halt robot if it's within 1 degree of goal theta
+        motorsP.setSpeeds(0, 0);
+    }
 
     Serial.print("Right pressed!\n");
   }
