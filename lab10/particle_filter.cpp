@@ -60,12 +60,15 @@ void ParticleFilter::move_particles(float dx, float dy, float dtheta){
 // finally, use wrap_pi and clamp functions to wrap "angle" & keep particles "x" and"y" inside the map
 //The wrapping prevents invalid grid conversions in measure().
 //TODO: Put code under here
-  for(int i = 0; i < _num_particles; i++){
-    float noise_dx = dx + Gaussian::gaussian(0, _translation_variance);
-    float noise_dy = dy + Gaussian::gaussian(0, _translation_variance);
-    float noise_dtheta = dtheta + Gaussian::gaussian(0, _rotation_variance);
 
-    _particle_list[i].angle = wrap_pi(_partice_list[i].angle + noise_dtheta);
+  Gaussian g;
+
+  for(int i = 0; i < _num_particles; i++){
+    float noise_dx = dx + g.random() * _translation_variance;
+    float noise_dy = dy + g.random() * _translation_variance;
+    float noise_dtheta = dtheta + g.random() * _rotation_variance;
+
+    _particle_list[i].angle = wrap_pi(_particle_list[i].angle + noise_dtheta);
     _particle_list[i].x = clamp(_particle_list[i].x + noise_dx * cos(_particle_list[i].angle) - noise_dy * sin(_particle_list[i].angle), 0.0, (float)_lenOfMap);
     _particle_list[i].y = clamp(_particle_list[i].y + noise_dx * sin(_particle_list[i].angle) + noise_dy * cos(_particle_list[i].angle), 0.0, (float)_lenOfMap);
 
@@ -254,4 +257,3 @@ void ParticleFilter::estimate_position(){
   }
   //End of for loop
 }
-
