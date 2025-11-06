@@ -124,7 +124,8 @@ void loop() {
  
 }
 
-void movement(){
+//DONE
+void movement(){ 
   // Remote-Controlling 
   int leftSpeed = 0, rightSpeed = 0;
   float goal_theta; //Goal theta orientation
@@ -140,7 +141,7 @@ void movement(){
     //So, basically, your left turn target = current heading + 90°
 
     //movement function here
-    //TODO: Put code under here
+    //TODO: Put code under here (DONE)
     goal_theta = wrapPi(theta + PI/2); //set goal_theta from current position for 90 degree left turn
 
     PID_OUT_ANGLE = PIDcontroller.update(theta, goal_theta); 
@@ -156,7 +157,7 @@ void movement(){
     Serial.print("Left pressed!\n");
   } else if(buttonB.isPressed()){ // drive forward
     //movement function here
-    //TODO: Put code under here
+    //TODO: Put code under here (DONE)
     
     //Set the goal to be 20cm forward from current position
     goal_x = x + 20 * cos(theta);
@@ -177,7 +178,7 @@ void movement(){
     Serial.print("Forward pressed!\n");
   } else if(buttonC.isPressed()){ // turn right
     //movement function here
-    //TODO: Put code under here
+    //TODO: Put code under here (DONE)
     goal_theta = wrapPi(theta - PI/2); //set goal_theta from current position for 90 degree right turn
 
     PID_OUT_ANGLE = PIDcontroller.update(theta, goal_theta); 
