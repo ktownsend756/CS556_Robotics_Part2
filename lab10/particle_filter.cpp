@@ -37,10 +37,10 @@ ParticleFilter::ParticleFilter(const Map& map, int lenOfMap, int num_particles, 
   //All probabilities will be the same at the start.
   //TODO: fill in "..."
   for(uint8_t i=0;i<_num_particles; i++){
-    _particle_list[i].x = ...
-    _particle_list[i].y = ...
-    _particle_list[i].angle = ...
-    _particle_list[i].probability = ...
+    _particle_list[i].x = random(0, _lenOfMap);
+    _particle_list[i].y = random(0, _lenOfMap);
+    _particle_list[i].angle = ((float) random(0,628))/100.0-PI;
+    _particle_list[i].probability = 1.0/_num_particles;
   }
 
 }
@@ -51,8 +51,7 @@ void ParticleFilter::move_particles(float dx, float dy, float dtheta){
 //You will need to utilize _translation_variance and _rotation_variance
 //TODO: Put code under here
 
-
-
+  
 //Then add the current _particle_list[i] angle value with dtheta + random rotational
 //And add the current _particle_list[i] x value with dx + random translation times the appropriate sin/cos angle value
 //Do the same for y
@@ -61,9 +60,16 @@ void ParticleFilter::move_particles(float dx, float dy, float dtheta){
 // finally, use wrap_pi and clamp functions to wrap "angle" & keep particles "x" and"y" inside the map
 //The wrapping prevents invalid grid conversions in measure().
 //TODO: Put code under here
+  for(int i = 0; i < _num_particles; i++){
+    float noise_dx = dx + Gaussian::gaussian(0, _translation_variance);
+    float noise_dy = dy + Gaussian::gaussian(0, _translation_variance);
+    float noise_dtheta = dtheta + Gaussian::gaussian(0, _rotation_variance);
 
+    _particle_list[i].angle = wrap_pi(_partice_list[i].angle + noise_dtheta);
+    _particle_list[i].x = clamp(_particle_list[i].x + noise_dx * cos(_particle_list[i].angle) - noise_dy * sin(_particle_list[i].angle), 0.0, (float)_lenOfMap);
+    _particle_list[i].y = clamp(_particle_list[i].y + noise_dx * sin(_particle_list[i].angle) + noise_dy * cos(_particle_list[i].angle), 0.0, (float)_lenOfMap);
 
-
+  }
 }
 
 
@@ -214,3 +220,4 @@ void ParticleFilter::estimate_position(){
   //End of for loop
 
 }
+
