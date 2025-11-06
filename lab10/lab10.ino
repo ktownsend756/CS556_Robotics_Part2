@@ -98,18 +98,24 @@ void loop() {
   //Parameters are change from current and past odometer values
   //Use qrapPi function to Wrap dθ when propagating particles
   //TODO: Put code under here 
+  float dx = x - x_last;
+  float dy = y - y_last;
+  float dtheta = wrapPi(theta - theta_last);
+  particle.move_particles(dx, dy, dtheta);
   
 
 
   //Measaure, estimation, and resample
   //Calculate particle's posterior probabilities, calculate estimated robot's position, and resample
   //TODO: Put code under here 
-
+  particle.measure();
+  particle.estimate_position();
+  particle.resample();
 
 
   // Display all particle locations and estimated robot location on screen   
   //TODO: Put code under here 
-
+  particle.print_particles();
   
     
   //save last odometer reading
@@ -195,3 +201,4 @@ void movement(){
   }
  
 }
+
