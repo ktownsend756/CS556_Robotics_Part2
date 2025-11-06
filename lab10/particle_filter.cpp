@@ -209,9 +209,7 @@ void ParticleFilter::print_particles(){
   //print current iteration number, particles, and estimated location
   //Before estimating position, call the estimate_position function.
   //TODO: Put code under here
-
-
-
+  
 }
 
 /* Estimate the position of the robot using posterior probabilities */
@@ -223,10 +221,12 @@ void ParticleFilter::estimate_position(){
   //Add current _x_est to particle list probability times particle list x
   //Do the same for y and angle
   //This should be in a for loop
-  //TODO: Put code under here
+  //TODO: Put code under here (DONE)
 
-
-
+  for(int i = 0; i < _num_particles; i++){
+    _x_est += _particle_list[i].probability * _particle_list[i].x;
+    _y_est += _particle_list[i].probability * _particle_list[i].y;
+    _angle_est += _particle_list[i].probability * _particle_list[i].angle;
+  }
   //End of for loop
-
 }
