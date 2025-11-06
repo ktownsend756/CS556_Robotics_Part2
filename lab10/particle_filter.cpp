@@ -209,6 +209,30 @@ void ParticleFilter::print_particles(){
   //print current iteration number, particles, and estimated location
   //Before estimating position, call the estimate_position function.
   //TODO: Put code under here
+
+  Serial.print("Iteration: ");
+  Serial.println(_iter);
+  for(int i = 0; i < _num_particles; i++){
+    Serial.print("Particle: ");
+    Serial.print(i);
+    Serial.print(", x = ");
+    Serial.print(_particle_list[i].x, 2);
+    Serial.print(", y = ");
+    Serial.print(_particle_list[i].y, 2);
+    Serial.print(", angle = ");
+    Serial.print(_particle_list[i].angle, 2);
+    Serial.print(", probability = ");
+    Serial.println(_particle_list[i].probability, 4);
+  }
+
+  estimate_position();
+
+  Serial.print("Estimated Position x = ");
+  Serial.print(_x_est, 2);
+  Serial.print(", y = ");
+  Serial.print(_y_est, 2);
+  Serial.print(", angle = ");
+  Serial.print(_angle_est, 2);
   
 }
 
@@ -230,3 +254,4 @@ void ParticleFilter::estimate_position(){
   }
   //End of for loop
 }
+
