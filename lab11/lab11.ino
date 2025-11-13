@@ -38,6 +38,7 @@ Odometry odometry(diaL, diaR, w, nL, nR, gearRatio);
 ParticleFilter particle(worldMap, lenOfMap, N_particles, move_noise, rotate_noise, ultra_noise);
 
 uint8_t iter =0;
+Sonar sonar = Sonar(4);
 
 //odometry
 int16_t deltaL=0, deltaR=0;
@@ -87,7 +88,7 @@ void setup() {
 }
 
 void loop() {
-  movement();
+  sensing_and_movement();
 
 
   //Get odometer readings  
@@ -140,6 +141,7 @@ void loop() {
  
 }
 
+/*
 //DONE
 void movement(){ 
   // Remote-Controlling 
@@ -216,4 +218,68 @@ void movement(){
     motorsP.setSpeeds(0,0);
   }
  
+}*/
+
+
+
+void sensing_and_movement(){
+  
+  float dist = sonar.readDist();
+  const float wallDist = 10.0;
+  double dist_err;
+
+  if(dist < wallDist){
+    float goal_theta = wrapPi(theta - PI/2.0);
+    PID_OUT_ANGLE = PIDcontroller.update(0, angleErr(goal_theta,theta));
+    motorsP.setSpeeds(PID_OUT_ANGLE, -PID_OUT_ANGLE);
+    delay(600);
+    motorsP.setSpeeds(0,0);
+  }
+  else{
+    float goal_x = x + 10 * cos(theta);
+    float goal_y = y + 10 * sin(theta);
+
+    dist_err = sqrt(pow(goal_x - x, 2) + pow(goal_y - y, 2));
+    PID_OUT_DISTANCE = PIDcontroller.update(0, dist_err);
+    motorsP.setSpeeds(-PID_OUT_DISTANCE, -PID_OUT_DISTANCE);
+    delay(800);
+    motorsP.setSpeeds(0,0);
+  }
+
+  delay(500);
+
+}
+
+
+bool confidence(){
+
+  if(iter < 20){
+    return false;
+  }
+
+  int grid[3][3] = {0};
+
+  for(int i = 0; i < N_particles; i++){
+    int x = constrain(particle._particle_list[i].x, 0, 2);
+    int y = constrain(particle._particle_list[i].y, 0, 2);
+    grid[x][y]++;
+  }
+
+  int max = 0;
+  for(int i = 0; i < 3; i++){
+    for(int j = 0; j < 3; j++){
+      if(grid[i][j] > max){
+        max = grid[i][j];
+      }
+    }
+  }
+
+  if(max >=0.88 * N_particles){
+    return true;
+  }
+  else{
+    return false;
+  }
+
+
 }
