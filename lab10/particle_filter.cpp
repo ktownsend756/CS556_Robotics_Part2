@@ -9,6 +9,7 @@ using namespace Pololu3piPlus32U4;
 
 //2 helper functions to use when you need to wrap angles and keep particles inside the map
 static float wrap_pi(float a){ while(a<=-PI) a+=2*PI; while(a>PI) a-=2*PI; return a; }
+static inline float angleErr(float target, float curr){ float a = target - curr; while(a <= -PI) a += 2*PI; while(a > PI) a -= 2*PI; return a; }
 static float clamp(float v,float lo,float hi){ return v<lo?lo:(v>hi?hi:v); }
 
 
@@ -62,16 +63,17 @@ void ParticleFilter::move_particles(float dx, float dy, float dtheta){
 //TODO: Put code under here
 
   Gaussian g;
-
-  for(int i = 0; i < _num_particles; i++){
+  // use Gaussian function to pass (0, variance)
+  for(uint8_t i = 0; i < _num_particles; i++){
+    // remove from for loop
     float noise_dx = dx + g.random() * _translation_variance;
     float noise_dy = dy + g.random() * _translation_variance;
     float noise_dtheta = dtheta + g.random() * _rotation_variance;
 
-    _particle_list[i].angle = wrap_pi(_particle_list[i].angle + noise_dtheta);
+    _particle_list[i].angle = wrap_pi(_particle_list[i].angle);
+    // accumulate with +=
     _particle_list[i].x = clamp(_particle_list[i].x + noise_dx * cos(_particle_list[i].angle) - noise_dy * sin(_particle_list[i].angle), 0.0, (float)_lenOfMap);
     _particle_list[i].y = clamp(_particle_list[i].y + noise_dx * sin(_particle_list[i].angle) + noise_dy * cos(_particle_list[i].angle), 0.0, (float)_lenOfMap);
-
   }
 }
 
@@ -82,58 +84,44 @@ void ParticleFilter::move_particles(float dx, float dy, float dtheta){
 //Thus, In measure() accumulate log-likelihood then exponentiate with max-trick before normalization.
 void ParticleFilter::measure(){
   // calculates probability of robot at location given ultrasonic reading
-  // compute what the distance should be, if particle position is accurate
-  /*If the robot uses closest_distance to calculate posterior probabilities in a particle filter,
-    the return of this function helps assess the likelihood of the particle's position given the map layout.
-     
-    For example, if a particle's estimated sensor reading (distance to nearest obstacle) 
-    aligns with the robot's actual sensor reading, 
-    this particle is likely to be close to the robot’s true position.*/
+
   // Grid scale: 60 cm map, 3 cells => 20 cm per grid unit
-  //TODO: Put code under here
-  
+  const float grid_scale_cm = (_lenOfMap / 3.0f);
 
   // Read sonar ONCE per update (use same z for all particles)
-  //TODO: Put code under here (DONE)
-  float z_meas = _sonar.readDist();
+  const float z_meas = _sonar.readDist();
 
   // We'll accumulate log-weights first for numerical stability
   float maxlog = -1e30f;
 
-  //For loop
-  for(int i = 0; i < _num_particles; i++){
+  for(uint8_t i = 0; i < _num_particles; i++){
     // Convert particle (cm) -> grid units expected by Map::closest_distance
-    //TODO: Put code under here (DONE)
-   float origin[2] = {
-      _particle_list[i].x / 20,
-      _particle_list[i].y / 20
+    float origin[2] = {
+      _particle_list[i].x / grid_scale_cm,
+      _particle_list[i].y / grid_scale_cm
     };
-
-    //calculate float particledist which is particle distance using sonar data
-    //TODO: Put code under here (DONE)
     float particledist = _mp->closest_distance(origin, _particle_list[i].angle); // in grid units
 
-    //inside the same loop, per particle
+    // inside measure(), per particle
     float expected_cm = particledist * (_lenOfMap/3.0f);  // predicted range in cm
     float z = z_meas;
     float s2 = _measurement_variance;        // variance (not sigma)
     float loglik = -0.5f * ( (z - expected_cm)*(z - expected_cm)/s2 + logf(2.0f * PI * s2) );
 
     // store log-weights (use previous weight in log-domain; guard against 0)
-    _particle_list[i].probability = loglik;
+    _particle_list[i].probability =
+        logf(fmaxf(1e-30f, _particle_list[i].probability)) + loglik;
+
     // track maximum log-weight for the max-trick
-    if(loglik > maxlog){
-      maxlog = loglik;
+    if (_particle_list[i].probability > maxlog) {
+      maxlog = _particle_list[i].probability;
     }
-    
   }
-  //End of for loop
 
-
+  // after loop: convert to weights safely (max-trick), then normalize
   float norm_factor = 0.0f;  // reuse your variable name as the sum of linear weights
-  // Define a new loop to convert to weights safely (max-trick), then normalize
-  for(int i = 0; i < _num_particles; i++){
-    _particle_list[i].probability = exp(_particle_list[i].probability - maxlog);
+  for(uint8_t i = 0; i < _num_particles; i++){
+    _particle_list[i].probability = expf(_particle_list[i].probability - maxlog);
     norm_factor += _particle_list[i].probability;
   }
 
@@ -158,9 +146,7 @@ void ParticleFilter::measure(){
     }
   }
 
-  // TODO Resample particles around likely hypotheses
-  //Outside all for loops, call resample(...) at the end of function
-  //TODO: Put code under here
+  // Resample particles around likely hypotheses
   resample(maxprob);
 }
 
