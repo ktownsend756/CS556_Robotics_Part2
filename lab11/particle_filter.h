@@ -25,7 +25,8 @@ class ParticleFilter{
       private:
       
     };
-    
+  public:
+    ParticleFilter::Particle _particle_list[25];
   private:
     int _lenOfMap;
     float _translation_variance;
@@ -40,7 +41,7 @@ class ParticleFilter{
     
     int _num_particles;
     Sonar _sonar = Sonar(4);
-    ParticleFilter::Particle _particle_list[25];
+    
 };
 
 #endif
