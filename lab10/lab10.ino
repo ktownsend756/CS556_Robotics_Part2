@@ -61,6 +61,8 @@ float theta_last = 0.0;
 #define maxOutput 100
 
 static inline float wrapPi(float a){ while(a <= -PI) a += 2*PI; while(a > PI) a -= 2*PI; return a; }
+static inline float angleErr(float target, float curr){ float a = target - curr; while(a <= -PI) a += 2*PI; while(a > PI) a -= 2*PI; return a; }
+
 
 
 //Comment out if using motion primitives
@@ -87,6 +89,7 @@ void setup() {
 void loop() {
   movement();
 
+
   //Get odometer readings  
   deltaL = encoders.getCountsAndResetLeft();
   deltaR = encoders.getCountsAndResetRight();
@@ -94,16 +97,23 @@ void loop() {
   encCountsRight += deltaR;   
   odometry.update_odom(encCountsLeft,encCountsRight, x, y, theta);
 
+
   //movement function
   //Propagate particles by using move_particles.
   //Parameters are change from current and past odometer values
   //Use qrapPi function to Wrap dθ when propagating particles
   //TODO: Put code under here 
+  float c = cos(theta_last), s = sin(theta_last);
+  float dx_body = c*(x-x_last) + s*(y - y_last);
+  float dy_body = -s*(x - x_last) + c*(y - y_last);
+
+/*
   float dx = x - x_last;
   float dy = y - y_last;
   float dtheta = wrapPi(theta - theta_last);
-  particle.move_particles(dx, dy, dtheta);
-  
+*/
+  particle.move_particles(dx_body, dy_body, wrapPi(theta - theta_last));
+
 
 
   //Measaure, estimation, and resample
@@ -148,18 +158,18 @@ void movement(){
 
     //movement function here
     //TODO: Put code under here (DONE)
-    goal_theta = wrapPi(theta + PI/2); //set goal_theta from current position for 90 degree left turn
+    goal_theta = wrapPi(theta + 3.14/2.0); //set goal_theta from current position for 90 degree left turn
 
-    PID_OUT_ANGLE = PIDcontroller.update(theta, goal_theta); 
+    PID_OUT_ANGLE = PIDcontroller.update(0, angleErr(goal_theta, theta)); 
 
-    leftSpeed = -PID_OUT_ANGLE;
-    rightSpeed = PID_OUT_ANGLE;
+    leftSpeed = PID_OUT_ANGLE*.65;
+    rightSpeed = -PID_OUT_ANGLE*.65;
     motorsP.setSpeeds(leftSpeed, rightSpeed);
 
     if(fabs(wrapPi(goal_theta - theta)) < 0.017){ //Halt robot if it's within 1 degree of goal theta
         motorsP.setSpeeds(0, 0);
     }
-
+    while(buttonA.isPressed()){delay(5);}
     Serial.print("Left pressed!\n");
   } else if(buttonB.isPressed()){ // drive forward
     //movement function here
@@ -173,31 +183,37 @@ void movement(){
 
     PID_OUT_DISTANCE = PIDcontroller.update(0, dist_err);
  
-    leftSpeed = rightSpeed = PID_OUT_DISTANCE;
+    leftSpeed = rightSpeed = PID_OUT_DISTANCE*1.2;
     
-    motorsP.setSpeeds(leftSpeed, rightSpeed);
+    motorsP.setSpeeds(-leftSpeed, -rightSpeed);
 
     if(fabs(dist_err) < 0.5){ //Halt robot once it is within half a centimeter from goal position
         motorsP.setSpeeds(0, 0);
     }
+    while(buttonB.isPressed()){delay(5);}
 
     Serial.print("Forward pressed!\n");
   } else if(buttonC.isPressed()){ // turn right
     //movement function here
     //TODO: Put code under here (DONE)
-    goal_theta = wrapPi(theta - PI/2); //set goal_theta from current position for 90 degree right turn
+    goal_theta = wrapPi(theta - 3.14/2.0); //set goal_theta from current position for 90 degree right turn
 
-    PID_OUT_ANGLE = PIDcontroller.update(theta, goal_theta); 
+    PID_OUT_ANGLE = PIDcontroller.update(0, angleErr(goal_theta, theta)); 
 
-    leftSpeed = PID_OUT_ANGLE;
-    rightSpeed = -PID_OUT_ANGLE;
+    leftSpeed = PID_OUT_ANGLE*0.65;
+    rightSpeed = -PID_OUT_ANGLE*0.65;
     motorsP.setSpeeds(leftSpeed, rightSpeed);
 
     if(fabs(wrapPi(goal_theta - theta)) < 0.017){ //Halt robot if it's within 1 degree of goal theta
         motorsP.setSpeeds(0, 0);
     }
+    while(buttonC.isPressed()){delay(5);}
+
 
     Serial.print("Right pressed!\n");
+  }
+  else{
+    motorsP.setSpeeds(0,0);
   }
  
 }
