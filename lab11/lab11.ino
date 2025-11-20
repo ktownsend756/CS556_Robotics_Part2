@@ -108,11 +108,7 @@ void loop() {
   float dx_body = c*(x-x_last) + s*(y - y_last);
   float dy_body = -s*(x - x_last) + c*(y - y_last);
 
-/*
-  float dx = x - x_last;
-  float dy = y - y_last;
-  float dtheta = wrapPi(theta - theta_last);
-*/
+
   particle.move_particles(dx_body, dy_body, wrapPi(theta - theta_last));
 
 
@@ -136,89 +132,15 @@ void loop() {
   theta_last = theta;
     
   iter++;
+
+  if (confidence()){
+    motorsP.setSpeeds(0,0);
+    Serial.println("Confident");
+    while(1);
+  }
     
-  delay(1000); //for easier viewing of output
  
 }
-
-/*
-//DONE
-void movement(){ 
-  // Remote-Controlling 
-  int leftSpeed = 0, rightSpeed = 0;
-  float goal_theta; //Goal theta orientation
-  float goal_x, goal_y;
-  double dist_err; //Goal position (x,y)
-  if(buttonA.isPressed()){ //turn left
-    //Note, if you use PIDconrollers,know that PID assumes: output = Kp*(setpoint - measured) + ...
-    // Using a relative setpoint makes each button press add/subtract 90°
-    //your PID call needs a target angle (setpoint), not just “turn right.”
-    //PIDcontroller.update(theta, goal_theta) sets a fixed global setpoint of +π/2 (≈ 90°). That means:
-    //First left turn from θ≈0 → good (aims for +90°).
-    //Next left turn from θ≈+90° → does nothing, because you’re already at the setpoint (+90°). It won’t add another 90°.
-    //So, basically, your left turn target = current heading + 90°
-
-    //movement function here
-    //TODO: Put code under here (DONE)
-    goal_theta = wrapPi(theta + 3.14/2.0); //set goal_theta from current position for 90 degree left turn
-
-    PID_OUT_ANGLE = PIDcontroller.update(0, angleErr(goal_theta, theta)); 
-
-    leftSpeed = PID_OUT_ANGLE*.65;
-    rightSpeed = -PID_OUT_ANGLE*.65;
-    motorsP.setSpeeds(leftSpeed, rightSpeed);
-
-    if(fabs(wrapPi(goal_theta - theta)) < 0.017){ //Halt robot if it's within 1 degree of goal theta
-        motorsP.setSpeeds(0, 0);
-    }
-    while(buttonA.isPressed()){delay(5);}
-    Serial.print("Left pressed!\n");
-  } else if(buttonB.isPressed()){ // drive forward
-    //movement function here
-    //TODO: Put code under here (DONE)
-    
-    //Set the goal to be 20cm forward from current position
-    goal_x = x + 20 * cos(theta);
-    goal_y = y + 20 * sin(theta);
-
-    dist_err = sqrt(pow(goal_x - x, 2) + pow(goal_y - y, 2));
-
-    PID_OUT_DISTANCE = PIDcontroller.update(0, dist_err);
- 
-    leftSpeed = rightSpeed = PID_OUT_DISTANCE*1.2;
-    
-    motorsP.setSpeeds(-leftSpeed, -rightSpeed);
-
-    if(fabs(dist_err) < 0.5){ //Halt robot once it is within half a centimeter from goal position
-        motorsP.setSpeeds(0, 0);
-    }
-    while(buttonB.isPressed()){delay(5);}
-
-    Serial.print("Forward pressed!\n");
-  } else if(buttonC.isPressed()){ // turn right
-    //movement function here
-    //TODO: Put code under here (DONE)
-    goal_theta = wrapPi(theta - 3.14/2.0); //set goal_theta from current position for 90 degree right turn
-
-    PID_OUT_ANGLE = PIDcontroller.update(0, angleErr(goal_theta, theta)); 
-
-    leftSpeed = PID_OUT_ANGLE*0.65;
-    rightSpeed = -PID_OUT_ANGLE*0.65;
-    motorsP.setSpeeds(leftSpeed, rightSpeed);
-
-    if(fabs(wrapPi(goal_theta - theta)) < 0.017){ //Halt robot if it's within 1 degree of goal theta
-        motorsP.setSpeeds(0, 0);
-    }
-    while(buttonC.isPressed()){delay(5);}
-
-
-    Serial.print("Right pressed!\n");
-  }
-  else{
-    motorsP.setSpeeds(0,0);
-  }
- 
-}*/
 
 
 
@@ -232,8 +154,15 @@ void sensing_and_movement(){
     float goal_theta = wrapPi(theta - PI/2.0);
     PID_OUT_ANGLE = PIDcontroller.update(0, angleErr(goal_theta,theta));
     motorsP.setSpeeds(PID_OUT_ANGLE, -PID_OUT_ANGLE);
-    delay(600);
+    delay(1500);
     motorsP.setSpeeds(0,0);
+    delay(500);
+    if(sonar.readDist() < wallDist){
+      motorsP.setSpeeds(PID_OUT_ANGLE, -PID_OUT_ANGLE);
+      delay(3000);
+      motorsP.setSpeeds(0,0);
+      delay(500);
+    }
   }
   else{
     float goal_x = x + 10 * cos(theta);
@@ -242,11 +171,10 @@ void sensing_and_movement(){
     dist_err = sqrt(pow(goal_x - x, 2) + pow(goal_y - y, 2));
     PID_OUT_DISTANCE = PIDcontroller.update(0, dist_err);
     motorsP.setSpeeds(-PID_OUT_DISTANCE, -PID_OUT_DISTANCE);
-    delay(800);
+    delay(1500);
     motorsP.setSpeeds(0,0);
   }
 
-  delay(500);
 
 }
 
