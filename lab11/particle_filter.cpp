@@ -62,22 +62,7 @@ void ParticleFilter::move_particles(float dx, float dy, float dtheta){
 //The wrapping prevents invalid grid conversions in measure().
 //TODO: Put code under here
 
-  Gaussian g;
-  // use Gaussian function to pass (0, variance)
-  for(uint8_t i = 0; i < _num_particles; i++){
-    // remove from for loop
-    float noise_dx = dx + g.random() * _translation_variance;
-    float noise_dy = dy + g.random() * _translation_variance;
-    float noise_dtheta = dtheta + g.random() * _rotation_variance;
-
-    _particle_list[i].angle = wrap_pi(_particle_list[i].angle);
-    // accumulate with +=
-    _particle_list[i].x = clamp(_particle_list[i].x + noise_dx * cos(_particle_list[i].angle) - noise_dy * sin(_particle_list[i].angle), 0.0, (float)_lenOfMap);
-    _particle_list[i].y = clamp(_particle_list[i].y + noise_dx * sin(_particle_list[i].angle) + noise_dy * cos(_particle_list[i].angle), 0.0, (float)_lenOfMap);
-  }
-
-  /*
-  //Kevin's solution
+  
   Gaussian g_trans = Gaussian(0, _translation_variance);
   Gaussian g_rotate = Gaussian(0, _rotation_variance);
 
@@ -100,34 +85,6 @@ void ParticleFilter::move_particles(float dx, float dy, float dtheta){
     _particle_list[i].y = clamp(_particle_list[i].y, 0.0, (float)_lenOfMap);
 
   }
-
-  //Kevin's solution 2 (adds original angle variable)
-  Gaussian g_trans = Gaussian(0, _translation_variance);
-  Gaussian g_rotate = Gaussian(0, _rotation_variance);
-
-  for(uint8_t i = 0; i < _num_particles; i++){
-
-    float orig_angle = _particle_list[i].angle;
-    
-    //Apply rotational movement
-    _particle_list[i].angle += dtheta + g_rotate.random(); //rotational noise
-
-    //Generate noise for translation
-    float dx_noise = dx + g_trans.random();
-    float dy_noise = dy + g_trans.random();
-
-    //Apply translational movement
-    _particle_list[i].x += dx_noise * cos(orig_angle) - dy_noise * sin(orig_angle);
-    _particle_list[i].y += dx_noise * sin(orig_angle) + dy_noise * cos(orig_angle);
-
-    //Wrap and Clamp to fit in map
-    _particle_list[i].angle = wrap_pi(_particle_list[i].angle);
-
-    _particle_list[i].x = clamp(_particle_list[i].x, 0.0, (float)_lenOfMap);
-    _particle_list[i].y = clamp(_particle_list[i].y, 0.0, (float)_lenOfMap);
-
-  }
-  */
  
 }
 
