@@ -1,7 +1,6 @@
 #include <Pololu3piPlus32U4.h>
 #include <Pololu3piPlus32U4Buzzer.h>
 #include <Servo.h>
-#include <stack>
 using namespace Pololu3piPlus32U4;
 #include "odometry.h"
 #include "sonar.h"
@@ -51,7 +50,7 @@ PIDcontroller PIDcontroller(kp, ki, kd, minOutput, maxOutput, clamp_i);
 double PID_OUT_ANGLE, PID_OUT_DISTANCE;
 float dist_err;
 
-const float wallDist = 10.0;
+const float wallDist = 15.0;
 float frontDist;
 float leftDist;
 
@@ -67,15 +66,17 @@ char grid[4][9] = {
   };
 int row = 0;
 int col = 0;
-int cells = 34;
+int cells = 36;
 
-stack<char> movements;
+
+char movements[100];
+int movement_counter = 0;
 
 void setup() {
   Serial.begin(9600);
   servo.attach(5);
   servo.write(90);
-  delay(1000);
+  delay(10000);
 
   grid[0][0] = 'V';
 }
@@ -97,6 +98,7 @@ void loop() {
   if(cells <= 0){
     backToDock(movements);
     motors.setSpeeds(0, 0); //Might remove later (redundant)
+    delay(5000);
   }
 
 }
@@ -104,7 +106,7 @@ void loop() {
 void sensing_and_movement(){
   frontDist = sonar.readDist();
   delay(500);
-  servo.write(0);
+  servo.write(180);
   delay(500);
   leftDist = sonar.readDist();
   servo.write(90);
@@ -117,11 +119,12 @@ void sensing_and_movement(){
     float goal_y = y + 10 * sin(theta);
 
     dist_err = sqrt(pow(goal_x - x, 2) + pow(goal_y - y, 2));
-    PID_OUT_DISTANCE = PIDcontroller.update(0, dist_err);
+    PID_OUT_DISTANCE = PIDcontroller.update(0, dist_err) * 2.5;
     motors.setSpeeds(-PID_OUT_DISTANCE, -PID_OUT_DISTANCE);
     delay(1500);
     motors.setSpeeds(0,0);
-    movements.push('F'); //Log movement
+    movements[movement_counter] = 'F'; //Log movement
+    movement_counter++;
   }
 
   // case 2: Left wall detected, front wall detected
@@ -132,14 +135,16 @@ void sensing_and_movement(){
     motors.setSpeeds(PID_OUT_ANGLE, -PID_OUT_ANGLE);
     delay(1500);
     motors.setSpeeds(0,0);
-    movements.push('R'); //Log movement
+    movements[movement_counter] = 'R'; //Log movement
+    movement_counter++;
     frontDist = sonar.readDist();
     direction = (direction + 1) % 4;
     if(frontDist < wallDist){
       motors.setSpeeds(PID_OUT_ANGLE, -PID_OUT_ANGLE);
       delay(1500);
       motors.setSpeeds(0,0);
-      movements.push('R'); //Log movement
+      movements[movement_counter] = 'R'; //Log movement
+      movement_counter++;
       delay(500);
       direction = (direction + 1) % 4;
     }
@@ -153,17 +158,19 @@ void sensing_and_movement(){
     motors.setSpeeds(-PID_OUT_ANGLE, PID_OUT_ANGLE);
     delay(1500);
     motors.setSpeeds(0,0);
-    movements.push('L'); //Log movement
+    movements[movement_counter] = 'L'; //Log movement
+    movement_counter++;
     
     float goal_x = x + 10 * cos(theta);
     float goal_y = y + 10 * sin(theta);
 
     dist_err = sqrt(pow(goal_x - x, 2) + pow(goal_y - y, 2));
-    PID_OUT_DISTANCE = PIDcontroller.update(0, dist_err);
+    PID_OUT_DISTANCE = PIDcontroller.update(0, dist_err) * 2.5;
     motors.setSpeeds(-PID_OUT_DISTANCE, -PID_OUT_DISTANCE);
     delay(1500);
     motors.setSpeeds(0,0);
-    movements.push('F'); //Log movement
+    movements[movement_counter] = 'F'; //Log movement
+    movement_counter++;
 
     direction = (direction + 3) % 4;
   }
@@ -188,9 +195,11 @@ void mark_visited(){
         Serial.print(' ');
     }
     Serial.println();
+  }
 }
 
-void backToDock(stack<char> _movements){
+
+void backToDock(char _movements[]){
   //Turn Robot around 180 degrees
   float goal_theta = wrapPi(theta - PI);
   PID_OUT_ANGLE = PIDcontroller.update(0, angleErr(goal_theta,theta));
@@ -199,9 +208,9 @@ void backToDock(stack<char> _movements){
   motors.setSpeeds(0,0);
   positionUpdate();
 
-  while(!_movements.empty()){
-    char movement = _movements.top();
-    _movements.pop();
+  for(int i = movement_counter; i >= 0; i--){
+    char movement = _movements[i];
+    
 
     if(movement == 'F'){ //Move Forward
       float goal_x = x + 10 * cos(theta);
@@ -235,6 +244,7 @@ void backToDock(stack<char> _movements){
   buzzer.playFrequency(1000, 200, 10); //Completion beep
 
 }
+
 
 void positionUpdate(){
   deltaL = encoders.getCountsAndResetLeft();
