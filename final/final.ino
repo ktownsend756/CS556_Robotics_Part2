@@ -64,6 +64,7 @@ char grid[4][9] = {
   };
 int row = 0;
 int col = 0;
+int cells = 34;
 
 void setup() {
   Serial.begin(9600);
@@ -86,7 +87,11 @@ void loop() {
   odometry.update_odom(encCountsLeft,encCountsRight, x, y, theta);
 
   mark_visited();
+  cells--;
 
+  if(cells <= 0){
+    // insert reverse path logic here, and halt forever
+  }
 
 }
 
