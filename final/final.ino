@@ -10,7 +10,7 @@ LineSensors lineSensors;
 Motors motors;
 Servo servo;
 
-Sonar sonar = sonar(4);
+Sonar sonar(4);
 
 #define PI 3.14159
 
@@ -46,6 +46,7 @@ float theta_last = 0.0;
 
 PIDcontroller PIDcontroller(kp, ki, kd, minOutput, maxOutput, clamp_i);
 double PID_OUT_ANGLE, PID_OUT_DISTANCE;
+float dist_err;
 
 const float wallDist = 10.0;
 float frontDist;
@@ -54,12 +55,23 @@ float leftDist;
 static inline float wrapPi(float a){ while(a <= -PI) a += 2*PI; while(a > PI) a -= 2*PI; return a; }
 static inline float angleErr(float target, float curr){ float a = target - curr; while(a <= -PI) a += 2*PI; while(a > PI) a -= 2*PI; return a; }
 
+int direction = 0; // 0 = down, 1 = left, 2 = up, 3 = right
+char grid[4][9] = {
+  {'N','N','N','N','N','N','N','N','N'},
+  {'N','N','N','N','N','N','N','N','N'},
+  {'N','N','N','N','N','N','N','N','N'},
+  {'N','N','N','N','N','N','N','N','N'}
+  };
+int row = 0;
+int col = 0;
+
 void setup() {
   Serial.begin(9600);
   servo.attach(5);
   servo.write(90);
   delay(1000);
 
+  grid[0][0] = 'V';
 }
 
 void loop() {
@@ -72,6 +84,8 @@ void loop() {
   encCountsLeft += deltaL;
   encCountsRight += deltaR;   
   odometry.update_odom(encCountsLeft,encCountsRight, x, y, theta);
+
+  mark_visited();
 
 
 }
@@ -87,6 +101,7 @@ void sensing_and_movement(){
   delay(500);
 
   // case 1: Left wall detected, front wall not detected
+  // move forward
   if(leftDist < wallDist && frontDist > wallDist){
     float goal_x = x + 10 * cos(theta);
     float goal_y = y + 10 * sin(theta);
@@ -99,6 +114,7 @@ void sensing_and_movement(){
   }
 
   // case 2: Left wall detected, front wall detected
+  // rotate right
   else if(leftDist < wallDist && frontDist < wallDist){
     float goal_theta = wrapPi(theta - PI/2.0);
     PID_OUT_ANGLE = PIDcontroller.update(0, angleErr(goal_theta,theta));
@@ -106,15 +122,18 @@ void sensing_and_movement(){
     delay(1500);
     motors.setSpeeds(0,0);
     frontDist = sonar.readDist();
+    direction = (direction + 1) % 4;
     if(frontDist < wallDist){
       motors.setSpeeds(PID_OUT_ANGLE, -PID_OUT_ANGLE);
       delay(1500);
       motors.setSpeeds(0,0);
       delay(500);
+      direction = (direction + 1) % 4;
     }
   }
 
   // case 3: Left wall not detected, front wall detected OR no wall detected
+  // rotate left & move forward
   else{
     float goal_theta = wrapPi(theta - PI/2.0);
     PID_OUT_ANGLE = PIDcontroller.update(0, angleErr(goal_theta,theta));
@@ -130,8 +149,20 @@ void sensing_and_movement(){
     motors.setSpeeds(-PID_OUT_DISTANCE, -PID_OUT_DISTANCE);
     delay(1500);
     motors.setSpeeds(0,0);
+
+    direction = (direction + 3) % 4;
   }
 
   
 }
 
+void mark_visited(){
+  // facing down
+  if(direction == 0) grid[++row][col] = 'V';
+  // facing left
+  if(direction == 1) grid[row][--col] = 'V';
+  // facing up
+  if(direction == 2) grid[--row][col] = 'V';
+  // facing right
+  if(direction == 3) grid[row][++col] = 'V';
+}
