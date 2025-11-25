@@ -165,4 +165,13 @@ void mark_visited(){
   if(direction == 2) grid[--row][col] = 'V';
   // facing right
   if(direction == 3) grid[row][++col] = 'V';
+
+  
+  // debugging purposes
+  for (int r = 0; r < 4; r++) {
+    for (int c = 0; c < 9; c++) {
+        Serial.print(grid[r][c]);
+        Serial.print(' ');
+    }
+    Serial.println();
 }
