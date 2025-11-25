@@ -1,5 +1,6 @@
 #include <Pololu3piPlus32U4.h>
 #include <Servo.h>
+#include <stack>
 using namespace Pololu3piPlus32U4;
 #include "odometry.h"
 #include "sonar.h"
@@ -90,11 +91,11 @@ void loop() {
   cells--;
 
   if(cells <= 0){
-    // insert reverse path logic here, and halt forever
+    backToDock(movements);
+    motors.setSpeeds(0, 0); //Might remove later (redundant)
   }
 
 }
-
 
 void sensing_and_movement(){
   frontDist = sonar.readDist();
@@ -157,7 +158,6 @@ void sensing_and_movement(){
 
     direction = (direction + 3) % 4;
   }
-
   
 }
 
@@ -179,4 +179,55 @@ void mark_visited(){
         Serial.print(' ');
     }
     Serial.println();
+}
+
+void backToDock(stack<char> movements){
+  //Turn Robot around 180 degrees
+  float goal_theta = wrapPi(theta - PI);
+  PID_OUT_ANGLE = PIDcontroller.update(0, angleErr(goal_theta,theta));
+  motors.setSpeeds(PID_OUT_ANGLE, -PID_OUT_ANGLE);
+  delay(1500);
+  motors.setSpeeds(0,0);
+  positionUpdate();
+
+  while(!movements.empty()){
+    char movement = movements.top();
+    movement.pop();
+
+    if(movement == 'F'){ //Move Forward
+      float goal_x = x + 10 * cos(theta);
+      float goal_y = y + 10 * sin(theta);
+      dist_err = sqrt(pow(goal_x - x, 2) + pow(goal_y - y, 2));
+      PID_OUT_DISTANCE = PIDcontroller.update(0, dist_err);
+      motors.setSpeeds(-PID_OUT_DISTANCE, -PID_OUT_DISTANCE);
+      delay(1500);
+      motors.setSpeeds(0,0);
+      positionUpdate();
+    }
+    else if(movement == 'L'){ // Opposite -> Rotate Right
+      float goal_theta = wrapPi(theta - PI/2.0);
+      PID_OUT_ANGLE = PIDcontroller.update(0, angleErr(goal_theta,theta));
+      motors.setSpeeds(PID_OUT_ANGLE, -PID_OUT_ANGLE);
+      delay(1500);
+      motors.setSpeeds(0,0);
+      positionUpdate();
+    }
+    else if(movement == 'R'){ // Opposite -> Rotate Left
+      float goal_theta = wrapPi(theta + PI/2.0);
+      PID_OUT_ANGLE = PIDcontroller.update(0, angleErr(goal_theta,theta));
+      motors.setSpeeds(-PID_OUT_ANGLE, PID_OUT_ANGLE);
+      delay(1500);
+      motors.setSpeeds(0,0);
+      positionUpdate();
+    }
+
+  }
+}
+
+void positionUpdate(){
+  deltaL = encoders.getCountsAndResetLeft();
+  deltaR = encoders.getCountsAndResetRight();
+  encCountsLeft += deltaL;
+  encCountsRight += deltaR;   
+  odometry.update_odom(encCountsLeft,encCountsRight, x, y, theta);
 }
