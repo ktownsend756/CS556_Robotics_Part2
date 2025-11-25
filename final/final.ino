@@ -1,4 +1,5 @@
 #include <Pololu3piPlus32U4.h>
+#include <Pololu3piPlus32U4Buzzer.h>
 #include <Servo.h>
 #include <stack>
 using namespace Pololu3piPlus32U4;
@@ -10,6 +11,7 @@ using namespace Pololu3piPlus32U4;
 LineSensors lineSensors;
 Motors motors;
 Servo servo;
+Buzzer buzzer;
 
 Sonar sonar(4);
 
@@ -67,6 +69,8 @@ int row = 0;
 int col = 0;
 int cells = 34;
 
+stack<char> movements;
+
 void setup() {
   Serial.begin(9600);
   servo.attach(5);
@@ -117,6 +121,7 @@ void sensing_and_movement(){
     motors.setSpeeds(-PID_OUT_DISTANCE, -PID_OUT_DISTANCE);
     delay(1500);
     motors.setSpeeds(0,0);
+    movements.push('F'); //Log movement
   }
 
   // case 2: Left wall detected, front wall detected
@@ -127,12 +132,14 @@ void sensing_and_movement(){
     motors.setSpeeds(PID_OUT_ANGLE, -PID_OUT_ANGLE);
     delay(1500);
     motors.setSpeeds(0,0);
+    movements.push('R'); //Log movement
     frontDist = sonar.readDist();
     direction = (direction + 1) % 4;
     if(frontDist < wallDist){
       motors.setSpeeds(PID_OUT_ANGLE, -PID_OUT_ANGLE);
       delay(1500);
       motors.setSpeeds(0,0);
+      movements.push('R'); //Log movement
       delay(500);
       direction = (direction + 1) % 4;
     }
@@ -146,6 +153,7 @@ void sensing_and_movement(){
     motors.setSpeeds(-PID_OUT_ANGLE, PID_OUT_ANGLE);
     delay(1500);
     motors.setSpeeds(0,0);
+    movements.push('L'); //Log movement
     
     float goal_x = x + 10 * cos(theta);
     float goal_y = y + 10 * sin(theta);
@@ -155,6 +163,7 @@ void sensing_and_movement(){
     motors.setSpeeds(-PID_OUT_DISTANCE, -PID_OUT_DISTANCE);
     delay(1500);
     motors.setSpeeds(0,0);
+    movements.push('F'); //Log movement
 
     direction = (direction + 3) % 4;
   }
@@ -181,7 +190,7 @@ void mark_visited(){
     Serial.println();
 }
 
-void backToDock(stack<char> movements){
+void backToDock(stack<char> _movements){
   //Turn Robot around 180 degrees
   float goal_theta = wrapPi(theta - PI);
   PID_OUT_ANGLE = PIDcontroller.update(0, angleErr(goal_theta,theta));
@@ -190,9 +199,9 @@ void backToDock(stack<char> movements){
   motors.setSpeeds(0,0);
   positionUpdate();
 
-  while(!movements.empty()){
-    char movement = movements.top();
-    movement.pop();
+  while(!_movements.empty()){
+    char movement = _movements.top();
+    _movements.pop();
 
     if(movement == 'F'){ //Move Forward
       float goal_x = x + 10 * cos(theta);
@@ -222,6 +231,9 @@ void backToDock(stack<char> movements){
     }
 
   }
+
+  buzzer.playFrequency(1000, 200, 10); //Completion beep
+
 }
 
 void positionUpdate(){
