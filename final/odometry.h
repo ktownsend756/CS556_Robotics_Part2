@@ -1,3 +1,10 @@
+/*
+* File: odometry.h
+* Team: 3
+* Robot: 28
+* Description: Header file for odometry
+*/
+
 #ifndef Odometry_h
 #define Odometry_h
 #include <Pololu3piPlus32U4.h>
