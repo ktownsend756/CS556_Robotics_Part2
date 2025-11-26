@@ -1,3 +1,11 @@
+/*
+* File: sonar.cpp
+* Team: 3
+* Robot: 28
+* Description: Uses the sonar sensor on the robot to emit and detect soundwaves and read the distance
+* between the robot and near by walls/obstacles
+*/
+
 #include <Pololu3piPlus32U4.h>
 #include "sonar.h"
 using namespace Pololu3piPlus32U4;
