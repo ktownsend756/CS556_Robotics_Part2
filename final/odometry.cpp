@@ -1,3 +1,11 @@
+/*
+* File: odometry.cpp
+* Team: 3
+* Robot: 28
+* Description: Uses built-in physical encoders to get counts and perform calculations to estimate the robot's
+* position and orientation
+*/
+
 #include <Pololu3piPlus32U4.h>
 #include <Pololu3piPlus32U4IMU.h>
 #include "odometry.h"
