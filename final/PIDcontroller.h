@@ -1,3 +1,10 @@
+/*
+* File: PIDcontroller.h
+* Team: 3
+* Robot: 28
+* Description: Header file for PIDcontroller
+*/
+
 #ifndef PIDcontroller_h
 #define PIDcontroller_h
 #include <Pololu3piPlus32U4.h>
