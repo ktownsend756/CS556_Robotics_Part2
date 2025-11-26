@@ -1,3 +1,12 @@
+/*
+* File: final.ino
+* Team: 3
+* Robot: 28
+* Description: Connects various components of the robot such as sonar, servo, and PIDcontrollers
+* so the robot can navigate through the maze switching task as needed depending on it's current position
+* in the environment
+*/
+
 #include <Pololu3piPlus32U4.h>
 #include <Pololu3piPlus32U4Buzzer.h>
 #include <Servo.h>
@@ -7,11 +16,11 @@ using namespace Pololu3piPlus32U4;
 #include "PIDcontroller.h"
 
 
+//Initialize Robot Components
 LineSensors lineSensors;
 Motors motors;
 Servo servo;
 Buzzer buzzer;
-
 Sonar sonar(4);
 
 #define PI 3.14159
@@ -54,9 +63,13 @@ const float wallDist = 15.0;
 float frontDist;
 float leftDist;
 
+//Keep angle values between -PI and PI [-PI, PI]
 static inline float wrapPi(float a){ while(a <= -PI) a += 2*PI; while(a > PI) a -= 2*PI; return a; }
+
+//Finds the shortest rotation between two angles
 static inline float angleErr(float target, float curr){ float a = target - curr; while(a <= -PI) a += 2*PI; while(a > PI) a -= 2*PI; return a; }
 
+//Map layout
 int direction = 0; // 0 = down, 1 = left, 2 = up, 3 = right
 char grid[4][9] = {
   {'N','N','N','N','N','N','N','N','N'},
@@ -68,7 +81,7 @@ int row = 0;
 int col = 0;
 int cells = 36;
 
-
+//Movement log array 
 char movements[100];
 int movement_counter = 0;
 
@@ -82,8 +95,8 @@ void setup() {
 }
 
 void loop() {
-
-  sensing_and_movement();
+  
+  sensing_and_movement(); 
 
   //Get odometer readings  
   deltaL = encoders.getCountsAndResetLeft();
@@ -95,14 +108,16 @@ void loop() {
   mark_visited();
   cells--;
 
+  //Once every cell has been visited, robot should return to the charging dock
   if(cells <= 0){
     backToDock(movements);
-    motors.setSpeeds(0, 0); //Might remove later (redundant)
+    motors.setSpeeds(0, 0); 
     delay(5000);
   }
 
 }
 
+//Robot uses sensors to read its surrondings then makes the proper movement based on its position in the environment
 void sensing_and_movement(){
   frontDist = sonar.readDist();
   delay(500);
@@ -177,6 +192,7 @@ void sensing_and_movement(){
   
 }
 
+//Marks unvisited cells in the map as visited once the robot reaches them
 void mark_visited(){
   // facing down
   if(direction == 0) grid[++row][col] = 'V';
@@ -198,9 +214,9 @@ void mark_visited(){
   }
 }
 
-
+//Robot uses the movement log to retrace its steps back to the charging dock
 void backToDock(char _movements[]){
-  //Turn Robot around 180 degrees
+  //Initially turn Robot around 180 degrees to begin backtrack
   float goal_theta = wrapPi(theta - PI);
   PID_OUT_ANGLE = PIDcontroller.update(0, angleErr(goal_theta,theta));
   motors.setSpeeds(PID_OUT_ANGLE, -PID_OUT_ANGLE);
@@ -208,6 +224,7 @@ void backToDock(char _movements[]){
   motors.setSpeeds(0,0);
   positionUpdate();
 
+  //Traverse through the movement log and make the proper movement
   for(int i = movement_counter; i >= 0; i--){
     char movement = _movements[i];
     
@@ -245,7 +262,7 @@ void backToDock(char _movements[]){
 
 }
 
-
+//Uses encoder counts and odometry to update the robot's position
 void positionUpdate(){
   deltaL = encoders.getCountsAndResetLeft();
   deltaR = encoders.getCountsAndResetRight();
