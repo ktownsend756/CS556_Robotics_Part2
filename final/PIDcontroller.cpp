@@ -1,3 +1,12 @@
+/*
+* File: PIDcontroller.cpp
+* Team: 3
+* Robot: 28
+* Description: Calculates the error between a goal state and the robot's actual state
+* and uses this error to produce an output that is meant to minimize the error so the robot can
+* reach the goal state
+*/
+
 #include <Pololu3piPlus32U4.h>
 #include "PIDcontroller.h"
 using namespace Pololu3piPlus32U4;
