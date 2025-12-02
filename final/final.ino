@@ -14,6 +14,7 @@ using namespace Pololu3piPlus32U4;
 #include "odometry.h"
 #include "sonar.h"
 #include "PIDcontroller.h"
+#include "PDcontroller.h"
 
 
 //Initialize Robot Components
@@ -46,7 +47,7 @@ float x_last = 0.0;
 float y_last = 0.0;
 float theta_last = 0.0;
 
-//PID Controller Variables
+//PID Controller Variables (Wall Following)
 #define kp 200
 #define kd 5
 #define ki 0.5
@@ -62,6 +63,23 @@ float dist_err;
 const float wallDist = 15.0;
 float frontDist;
 float leftDist;
+
+//PD Controller Variables (Line Following)
+#define minOutput -100      // Minimum correction value
+#define maxOutput 100       // Maximum correction value
+#define baseSpeed 100       // Base motor speed when following line
+#define kp_line 0.25        // Proportional gain
+#define kd_line 1           // Derivative gain
+
+PDcontroller pd_line(kp_line, kd_line, minOutput, maxOutput);
+int calibrationSpeed = 60; // Speed during calibration rotation
+int lineCenter = 2000;      // Target position (center of 0-4000 range)
+//Line Thresholds
+// BLUE line detection range (calibrated values typically 200-600)
+const uint16_t BLUE_MIN_CAL = 200;
+const uint16_t BLUE_MAX_CAL = 500;
+// BLACK square threshold (calibrated values typically > 900)
+const uint16_t BLACK_THRESHOLD = 900;
 
 //Keep angle values between -PI and PI [-PI, PI]
 static inline float wrapPi(float a){ while(a <= -PI) a += 2*PI; while(a > PI) a -= 2*PI; return a; }
@@ -89,30 +107,47 @@ void setup() {
   Serial.begin(9600);
   servo.attach(5);
   servo.write(90);
-  delay(10000);
-
+  delay(5000);
+  calibrateSensors(); 
   grid[0][0] = 'V';
 }
 
 void loop() {
-  
-  sensing_and_movement(); 
 
-  //Get odometer readings  
-  deltaL = encoders.getCountsAndResetLeft();
-  deltaR = encoders.getCountsAndResetRight();
-  encCountsLeft += deltaL;
-  encCountsRight += deltaR;   
-  odometry.update_odom(encCountsLeft,encCountsRight, x, y, theta);
+  //Declare array for lineSensor values
+  uint16_t lineSensorValues[5];
+  //Read sensor values
+  lineSensors.readCalibrated(*lineSensorValues);
+  //Get center sensor's value
+  uint16_t centerSensor = lineSensorValues[2];
+  //Print output for debugging
+  Serial.print("Center Sensor Value: ");
+  Serial.println(centerSensor);
 
-  mark_visited();
-  cells--;
+  if(centerSensor >= BLACK_THRESHOLD){
+      motors.setSpeeds(-200, 200);
+      delay(2500);
+      motors.setSpeeds(0, 0);    
+  }
+  else{
+    sensing_and_movement(); 
 
-  //Once every cell has been visited, robot should return to the charging dock
-  if(cells <= 0){
-    backToDock(movements);
-    motors.setSpeeds(0, 0); 
-    delay(5000);
+    //Get odometer readings  
+    deltaL = encoders.getCountsAndResetLeft();
+    deltaR = encoders.getCountsAndResetRight();
+    encCountsLeft += deltaL;
+    encCountsRight += deltaR;   
+    odometry.update_odom(encCountsLeft,encCountsRight, x, y, theta);
+
+    mark_visited();
+    cells--;
+
+    //Once every cell has been visited, robot should return to the charging dock
+    if(cells <= 0){
+      backToDock(movements);
+      motors.setSpeeds(0, 0); 
+      delay(5000);
+    }
   }
 
 }
@@ -228,7 +263,6 @@ void backToDock(char _movements[]){
   for(int i = movement_counter; i >= 0; i--){
     char movement = _movements[i];
     
-
     if(movement == 'F'){ //Move Forward
       float goal_x = x + 10 * cos(theta);
       float goal_y = y + 10 * sin(theta);
@@ -269,4 +303,101 @@ void positionUpdate(){
   encCountsLeft += deltaL;
   encCountsRight += deltaR;   
   odometry.update_odom(encCountsLeft,encCountsRight, x, y, theta);
+}
+
+//Phase 3 & 4 (IR Sensors/Line Following)
+void calibrateSensors()
+{
+  delay(1000);
+  Serial.println("Calibrating sensors...");   
+  
+  for(int i = 0; i < 120; i++){
+    if (i > 30 && i <= 90){
+      // Rotate left
+      motors.setSpeeds(int(-1 * calibrationSpeed), calibrationSpeed);
+    }
+    else{
+      // Rotate right
+      motors.setSpeeds(calibrationSpeed, int(-1 * calibrationSpeed));
+    }
+    lineSensors.calibrate();
+  } 
+  
+  motors.setSpeeds(0, 0);
+  Serial.println("Calibration complete!");
+}
+
+bool computeBlueLinePosition(uint16_t cal[5], uint16_t &position){
+  // Accumulators for weighted-average calculation
+  uint32_t weightedSum = 0;   // Sum of (activation * sensor_position)
+  uint32_t total = 0;         // Sum of activations
+
+  // Check each of the 5 sensors
+  for(int i = 0; i < 5; i++){
+    uint16_t val = cal[i];    // Calibrated value for sensor i 
+
+    // Only consider sensors reading in the "blue" range
+    if(val >= BLUE_MIN_CAL && val <= BLUE_MAX_CAL){
+      // Calculate activation strength (how "blue" the reading is)
+      // Higher values within the blue range = stronger activation
+      uint16_t v = val - BLUE_MIN_CAL;
+      
+      // Calculate this sensor's position on 0-4000 scale
+      // Sensor 0 = position 0, Sensor 1 = 1000, etc.
+      uint16_t pos = i * 1000;
+
+      // Add this sensor's contribution to weighted sum
+      weightedSum += (uint32_t)v * pos;
+      total += v;
+    }
+  }
+
+  // If no sensor detected blue, return false
+  if(total == 0){
+    return false;
+  }
+
+  // Calculate weighted average position
+  position = weightedSum / total;
+  return true;
+}
+
+void lineFollowing(){
+  // Read current calibrated sensor values
+  uint16_t cal[5];
+  lineSensors.readCalibrated(cal);
+  
+  // Try to find the blue line position
+  uint16_t position;
+  bool found = computeBlueLinePosition(cal, position);
+
+  // If blue line not detected, stop and return
+  if(!found){
+    Serial.println("BLUE LINE LOST - Stopping");
+    motors.setSpeeds(0, 0);
+    return;
+  }
+
+  // Calculate PD correction based on position error
+  // If position < 2000: line is left of center, need to turn left
+  // If position > 2000: line is right of center, need to turn right
+  int PDout = pd_line.update(position, lineCenter);
+
+  // Apply correction to motor speeds
+  // PDout > 0 means line is right, so speed up left motor
+  // PDout < 0 means line is left, so speed up right motor
+  int leftSpeed = baseSpeed + PDout;
+  int rightSpeed = baseSpeed - PDout;
+  
+  motors.setSpeeds(leftSpeed, rightSpeed);
+
+  // Debug output
+  Serial.print("FOLLOWING - Pos: ");
+  Serial.print(position);
+  Serial.print(" PD: ");
+  Serial.print(PDout);
+  Serial.print(" L: ");
+  Serial.print(leftSpeed);
+  Serial.print(" R: ");
+  Serial.println(rightSpeed);
 }
