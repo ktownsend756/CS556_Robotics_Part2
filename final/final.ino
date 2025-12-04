@@ -94,11 +94,11 @@ int calibrationSpeed = 60; // Speed during calibration rotation
 int lineCenter = 2000; // Target position (center of 0-4000 range)
 
 //Line Thresholds
-// BLUE line detection range (calibrated values typically 200-600)
+// BLUE line detection range (calibrated values typically 200-500)
 const uint16_t BLUE_MIN_CAL = 200;
 const uint16_t BLUE_MAX_CAL = 500;
-// BLACK square threshold (calibrated values typically > 900)
-const uint16_t BLACK_THRESHOLD = 900;
+// BLACK square threshold (calibrated values typically > 800)
+const uint16_t BLACK_THRESHOLD = 800;
 
 //Keep angle values between -PI and PI [-PI, PI]
 static inline float wrapPi(float a){ while(a <= -PI) a += 2*PI; while(a > PI) a -= 2*PI; return a; }
