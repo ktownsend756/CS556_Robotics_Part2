@@ -52,7 +52,6 @@ float theta_last = 0.0;
 #define kd 5
 #define ki 0.5
 #define clamp_i 50
-#define base_speed 100
 #define minOutput -100
 #define maxOutput 100
 
@@ -62,11 +61,10 @@ float dist_err;
 
 //Robot's Wall Following Functionality
 //PD Controller Variables (Wall Following)
-#define minOutput -100      // Minimum correction value
-#define maxOutput 100       // Maximum correction value
-#define baseSpeed 100       // Base motor speed when following line
-#define kp_wall 0.25        // Proportional gain, may need to change
-#define kd_wall 1           // Derivative gain, may need to change
+#define minOutput -150     // Minimum correction value
+#define maxOutput 150      // Maximum correction value
+#define kp_wall 7        // Proportional gain, may need to change
+#define kd_wall 3         // Derivative gain, may need to change
 
 #define baseSpeed 200
 
@@ -83,7 +81,6 @@ const float goalDist = 10.0;
 //PD Controller Variables (Line Following)
 #define minOutput -100      // Minimum correction value
 #define maxOutput 100       // Maximum correction value
-#define baseSpeed 100       // Base motor speed when following line
 #define kp_line 0.25        // Proportional gain
 #define kd_line 1           // Derivative gain
 
@@ -130,12 +127,13 @@ void setup() {
   servo.attach(5);
   servo.write(90);
   delay(5000);
-  calibrateSensors(); 
+  //calibrateSensors(); 
   grid[0][0] = 'V';
 }
 
 void loop() {
-
+  sensing_and_movement_v2(); 
+/*  
   //Declare array for lineSensor values
   uint16_t lineSensorValues[5];
   //Read sensor values
@@ -173,7 +171,7 @@ void loop() {
   //Check for Blue Line (Safety Zone -> Max Speed)
   else if(centerSensor >= BLUE_MIN_CAL && centerSensor <= BLUE_MAX_CAL){
     lineFollowing();
-    /*
+    
     bool blueDetected = true;
     while(blueDetected){
       motors.setSpeeds(300, 300); //Left and Right motors set to max speed
@@ -185,7 +183,7 @@ void loop() {
       }
     }
     motors.setSpeeds(0, 0); //halt
-    */
+    
   }
   else{
     //sensing_and_movement();
@@ -208,7 +206,7 @@ void loop() {
       delay(5000);
     }
   }
-
+*/
 }
 
 /*
@@ -289,22 +287,16 @@ void sensing_and_movement(){
 */
 
 void sensing_and_movement_v2(){
-  servo.write(90);
-  frontDist = sonar.readDist();
-  delay(500); //Debug delay
-  servo.write(180); 
-  leftDist = sonar.readDist();
-  delay(500);
+  senseWalls();
 
   // case 1: Left wall detected, front wall not detected
   // move forward
   if(leftDist < wallDist && frontDist > wallDist){
-    distfromWall = sonar.readDist();
-    PD_OUT_WALL = pd_wall.update(distfromWall, goalDist);
-    int leftSpeed = baseSpeed - PD_OUT_WALL;
-    int rightSpeed = baseSpeed + PD_OUT_WALL;
+    PD_OUT_WALL = pd_wall.update(leftDist, goalDist);
+    int leftSpeed = baseSpeed + PD_OUT_WALL;
+    int rightSpeed = baseSpeed - PD_OUT_WALL;
     motors.setSpeeds(leftSpeed, rightSpeed); //Robot starts following the wall adjusting it's distance to stay center
-    delay(1500); //Follow wall for 10cm
+    delay(1300); //Follow wall for 10cm
     motors.setSpeeds(0,0); 
     movements[movement_counter] = 'F'; //Log movement
     movement_counter++;
@@ -312,6 +304,8 @@ void sensing_and_movement_v2(){
   // case 2: Left wall detected, front wall detected
   // rotate right
   else if(leftDist < wallDist && frontDist < wallDist){
+    servo.write(90);
+    delay(500);
     float goal_theta = wrapPi(theta - PI/2.0);
     PID_OUT_ANGLE = PIDcontroller.update(0, angleErr(goal_theta,theta));
     motors.setSpeeds(PID_OUT_ANGLE, -PID_OUT_ANGLE);
@@ -329,12 +323,14 @@ void sensing_and_movement_v2(){
       movement_counter++;
       delay(500);
       direction = (direction + 1) % 4;
-    }
+    } 
   }
-  /* Case 3 may not be needed
+  // Case 3 may not be needed
   // case 3: Left wall not detected, front wall detected OR no wall detected
   // rotate left & move forward
   else{
+    servo.write(90);
+    delay(500);
     float goal_theta = wrapPi(theta - PI/2.0);
     PID_OUT_ANGLE = PIDcontroller.update(0, angleErr(goal_theta,theta));
     motors.setSpeeds(-PID_OUT_ANGLE, PID_OUT_ANGLE);
@@ -353,10 +349,18 @@ void sensing_and_movement_v2(){
     motors.setSpeeds(0,0);
     movements[movement_counter] = 'F'; //Log movement
     movement_counter++;
-
     direction = (direction + 3) % 4;
   }
-  */
+}
+
+void senseWalls(){
+  Serial.print("Sensing Walls Function Test");
+  servo.write(90);
+  delay(300);
+  frontDist = sonar.readDist();
+  servo.write(180);
+  delay(300);
+  leftDist = sonar.readDist();
 }
 
 //Marks unvisited cells in the map as visited once the robot reaches them
@@ -525,8 +529,8 @@ void lineFollowing(){
   // Apply correction to motor speeds
   // PDout > 0 means line is right, so speed up left motor
   // PDout < 0 means line is left, so speed up right motor
-  int leftSpeed = baseSpeed + PDout;
-  int rightSpeed = baseSpeed - PDout;
+  int leftSpeed = 300 + PDout;
+  int rightSpeed = 300 - PDout;
   
   motors.setSpeeds(leftSpeed, rightSpeed);
 
