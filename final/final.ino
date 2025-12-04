@@ -73,7 +73,8 @@ float leftDist;
 
 PDcontroller pd_line(kp_line, kd_line, minOutput, maxOutput);
 int calibrationSpeed = 60; // Speed during calibration rotation
-int lineCenter = 2000;      // Target position (center of 0-4000 range)
+int lineCenter = 2000;
+     // Target position (center of 0-4000 range)
 //Line Thresholds
 // BLUE line detection range (calibrated values typically 200-600)
 const uint16_t BLUE_MIN_CAL = 200;
@@ -103,6 +104,9 @@ int cells = 36;
 char movements[100];
 int movement_counter = 0;
 
+//Collected Bins Tracker
+bool binsCollected[3] = {false, false, false};
+
 void setup() {
   Serial.begin(9600);
   servo.attach(5);
@@ -124,10 +128,32 @@ void loop() {
   Serial.print("Center Sensor Value: ");
   Serial.println(centerSensor);
 
+  //Check for Black Square (Bin)
   if(centerSensor >= BLACK_THRESHOLD){
-      motors.setSpeeds(-200, 200);
-      delay(2500);
-      motors.setSpeeds(0, 0);    
+      if(!binsCollected[0]){ //Checks if first bin has been collected 
+        motors.setSpeeds(-200, 200);
+        delay(2500);
+        motors.setSpeeds(0, 0);
+        binsCollected[0] = true;
+        delay(500); //For debugging
+      }
+      else if(!binsCollected[1]){ //Checks if second bin has been collected
+        motors.setSpeeds(-200, 200);
+        delay(2500);
+        motors.setSpeeds(0, 0);
+        binsCollected[1] = true;
+        delay(500); //For debugging
+      }
+      else if(!binsCollected[2]){ //Checks if third bin has been collected
+        motors.setSpeeds(-200, 200);
+        delay(2500);
+        motors.setSpeeds(0, 0);
+        binsCollected[2] = true;
+        delay(500); //For debugging
+      }    
+  }
+  else if(centerSensor >= BLUE_MIN_CAL && centerSensor <= BLUE_MAX_CAL){
+
   }
   else{
     sensing_and_movement(); 
