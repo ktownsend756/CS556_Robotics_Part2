@@ -155,7 +155,7 @@ void loop() {
   //Declare array for lineSensor values
   uint16_t lineSensorValues[5];
   //Read sensor values
-  lineSensors.readCalibrated(*lineSensorValues);
+  lineSensors.readCalibrated(lineSensorValues);
   //Get center sensor's value
   uint16_t centerSensor = lineSensorValues[2];
   //Print output for debugging
