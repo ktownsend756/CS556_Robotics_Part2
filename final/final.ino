@@ -172,8 +172,20 @@ void loop() {
   }
   //Check for Blue Line (Safety Zone -> Max Speed)
   else if(centerSensor >= BLUE_MIN_CAL && centerSensor <= BLUE_MAX_CAL){
-
-    
+    lineFollowing();
+    /*
+    bool blueDetected = true;
+    while(blueDetected){
+      motors.setSpeeds(300, 300); //Left and Right motors set to max speed
+      //Fetch sensor values
+      lineSensors.readCalibrated(*lineSensorValues);
+      centerSensor = lineSensorValues[2];
+      if(centerSensor < BLUE_MIN_CAL || centerSensor > BLUE_MAX_CAL){ //Check if still on blue line
+        blueDetected = false;
+      }
+    }
+    motors.setSpeeds(0, 0); //halt
+    */
   }
   else{
     //sensing_and_movement();
