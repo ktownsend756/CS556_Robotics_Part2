@@ -75,7 +75,7 @@ const float wallDist = 15.0; //Threshold to detect if there is a wall.
 float frontDist;
 float leftDist;
 float distFromWall;
-const float goalDist = 10.0;
+const float goalDist = 7.0;
 
 //Robot's Line Detection Functionality
 //PD Controller Variables (Line Following)
