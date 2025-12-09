@@ -1,7 +1,7 @@
 /*
 * File: final.ino
 * Team: 3
-* Robot: 28
+* Robot: 06
 * Description: Connects various components of the robot such as sonar, servo, and PIDcontrollers
 * so the robot can navigate through the maze switching task as needed depending on it's current position
 * in the environment
@@ -75,7 +75,7 @@ const float wallDist = 15.0; //Threshold to detect if there is a wall.
 float frontDist;
 float leftDist;
 float distFromWall;
-const float goalDist = 7.0;
+const float goalDist = 7.5;
 
 //Robot's Line Detection Functionality
 //PD Controller Variables (Line Following)
@@ -92,10 +92,10 @@ int lineCenter = 2000; // Target position (center of 0-4000 range)
 
 //Line Thresholds
 // BLUE line detection range (calibrated values typically 200-500)
-const uint16_t BLUE_MIN_CAL = 200;
+const uint16_t BLUE_MIN_CAL = 125;
 const uint16_t BLUE_MAX_CAL = 500;
 // BLACK square threshold (calibrated values typically > 800)
-const uint16_t BLACK_THRESHOLD = 800;
+const uint16_t BLACK_THRESHOLD = 700;
 
 //Keep angle values between -PI and PI [-PI, PI]
 static inline float wrapPi(float a){ while(a <= -PI) a += 2*PI; while(a > PI) a -= 2*PI; return a; }
@@ -116,7 +116,7 @@ int col = 0;
 int cells = 36;
 
 //Movement log array 
-char movements[100];
+char movements[200];
 int movement_counter = 0;
 
 //Collected Bins Tracker
@@ -126,13 +126,13 @@ void setup() {
   Serial.begin(9600);
   servo.attach(5);
   servo.write(90);
-  delay(5000);
+  delay(500);
   calibrateSensors(); 
   grid[0][0] = 'V';
 }
 
 void loop() {
-  sensing_and_movement_v2(); 
+  sensing_and_movement_v2();
 
   //Get odometer readings  
   deltaL = encoders.getCountsAndResetLeft();
@@ -148,10 +148,9 @@ void loop() {
   if(cells <= 0){
     backToDock(movements);
     motors.setSpeeds(0, 0); 
-    delay(5000);
+    delay(20000);
   }
-  
-  
+
   //Declare array for lineSensor values
   uint16_t lineSensorValues[5];
   //Read sensor values
@@ -169,35 +168,38 @@ void loop() {
       delay(1500);
       motors.setSpeeds(0, 0);
       binsCollected[0] = true;
-      delay(500); //For debugging
     }
     else if(!binsCollected[1]){ //Checks if second bin has been collected
       motors.setSpeeds(-200, 200);
       delay(1500);
       motors.setSpeeds(0, 0);
       binsCollected[1] = true;
-      delay(500); //For debugging
     }
     else if(!binsCollected[2]){ //Checks if third bin has been collected
       motors.setSpeeds(-200, 200);
       delay(1500);
       motors.setSpeeds(0, 0);
       binsCollected[2] = true;
-      delay(500); //For debugging
     }    
   }
   //Check for Blue Line (Safety Zone -> Max Speed)
   else if(centerSensor >= BLUE_MIN_CAL && centerSensor <= BLUE_MAX_CAL){
-    lineFollowing();   
+    
+    lineFollowing();
+
+    motors.setSpeeds(150,150);
+    delay(350);
+
   }
+  
+
+  
   
 }
 
 
 
 void sensing_and_movement_v2(){
-  motors.setSpeeds(0, 0);
-  delay(500);
   senseWalls();
 
   // case 1: Left wall detected, front wall not detected
@@ -244,7 +246,6 @@ void sensing_and_movement_v2(){
   else if(leftDist < wallDist && frontDist < wallDist){
     Serial.println("Case 2");
     servo.write(90);
-    delay(500);
     float goal_theta = wrapPi(theta - PI/2.0);
     PID_OUT_ANGLE = PIDcontroller.update(0, angleErr(goal_theta,theta));
     motors.setSpeeds(PID_OUT_ANGLE, -PID_OUT_ANGLE);
@@ -260,7 +261,6 @@ void sensing_and_movement_v2(){
       motors.setSpeeds(0,0); //Do a second 90 degree right turn
       movements[movement_counter] = 'R'; //Log movement
       movement_counter++;
-      delay(500);
       direction = (direction + 1) % 4;
     } 
   }
@@ -270,7 +270,7 @@ void sensing_and_movement_v2(){
     Serial.println("Case 3");
 
     servo.write(90);
-    delay(500);
+    //delay(500);
     float goal_theta = wrapPi(theta - PI/2.0);
     PID_OUT_ANGLE = PIDcontroller.update(0, angleErr(goal_theta,theta));
     motors.setSpeeds(-PID_OUT_ANGLE, PID_OUT_ANGLE);
@@ -296,10 +296,10 @@ void sensing_and_movement_v2(){
 void senseWalls(){
   Serial.println("Currently Detecting Walls");
   servo.write(90);
-  delay(300);
+  delay(200);
   frontDist = sonar.readDist();
   servo.write(180);
-  delay(300);
+  delay(200);
   leftDist = sonar.readDist();
 }
 
